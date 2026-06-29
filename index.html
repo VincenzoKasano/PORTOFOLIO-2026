@@ -1787,35 +1787,49 @@
                 
                 let inputFieldHtml = '';
                 if (media.source === 'upload' && (media.type === 'image' || media.type === 'video')) {
+                    const previewUrl = media.localPreview || media.url;
+                    
                     inputFieldHtml = `
-                        <div class="space-y-2">
-                            <input type="file" onchange="handleMediaFileSelect(${idx}, this)" accept="${media.type === 'image' ? 'image/*' : 'video/mp4'}" class="w-full text-xs text-zinc-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-500/10 file:text-blue-600 dark:file:bg-blue-500/20 dark:file:text-blue-400 hover:file:opacity-80">
+                        <div class="space-y-3">
+                            <div class="relative flex items-center justify-between p-2.5 rounded-lg border border-black/10 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+                                <input type="file" onchange="handleMediaFileSelect(${idx}, this)" accept="${media.type === 'image' ? 'image/*' : 'video/mp4'}" class="w-full text-xs text-zinc-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-500/10 file:text-blue-600 dark:file:bg-blue-500/20 dark:file:text-blue-400 hover:file:opacity-80">
+                            </div>
                             
-                            ${media.progress > 0 && media.progress < 100 ? `
-                                <div class="w-full bg-black/5 dark:bg-white/5 rounded-full h-1.5 overflow-hidden">
-                                    <div class="bg-blue-500 h-1.5 rounded-full transition-all duration-300" style="width: ${media.progress}%"></div>
+                            ${media.status === 'uploading' ? `
+                                <div class="space-y-1.5 bg-black/5 dark:bg-white/5 rounded-xl p-3 border border-black/5 dark:border-white/5">
+                                    <div class="flex items-center justify-between text-[10px] font-semibold">
+                                        <span class="text-blue-500 animate-pulse">Mengunggah ke Cloud...</span>
+                                        <span class="font-mono text-zinc-500">${media.progress || 0}%</span>
+                                    </div>
+                                    <div class="w-full bg-black/10 dark:bg-white/10 rounded-full h-1.5 overflow-hidden">
+                                        <div class="bg-blue-500 h-full rounded-full transition-all duration-300" style="width: ${media.progress || 0}%"></div>
+                                    </div>
                                 </div>
-                                <span class="text-[10px] text-zinc-400 font-mono">Mengunggah... ${media.progress}%</span>
                             ` : ''}
 
-                            ${media.url ? `
-                                <div class="relative rounded-lg overflow-hidden border border-black/10 dark:border-zinc-800 bg-black/10 max-h-24 aspect-video flex items-center justify-center">
+                            ${previewUrl ? `
+                                <div class="relative rounded-xl overflow-hidden border border-black/10 dark:border-zinc-800 bg-black/15 dark:bg-black/40 aspect-video flex items-center justify-center max-h-40 group/preview shadow-inner">
                                     ${media.type === 'image' ? `
-                                        <img src="${media.url}" class="w-full h-full object-cover">
+                                        <img src="${previewUrl}" class="w-full h-full object-cover">
                                     ` : `
-                                        <video src="${media.url}" class="w-full h-full object-contain" muted controls></video>
+                                        <video src="${previewUrl}" class="w-full h-full object-contain" muted controls></video>
                                     `}
+                                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover/preview:opacity-100 transition-opacity duration-300 flex items-center justify-center pointer-events-none">
+                                        <span class="bg-black/60 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">
+                                            ${media.status === 'complete' || media.url ? '✓ Terunggah' : '⏳ Mengunggah'}
+                                        </span>
+                                    </div>
                                 </div>
                             ` : ''}
                         </div>
                     `;
                 } else {
                     inputFieldHtml = `
-                        <div class="space-y-2">
-                            <input type="url" value="${media.url || ''}" oninput="updateMediaRowUrl(${idx}, this.value)" placeholder="${getMediaPlaceholder(media.type)}" class="w-full p-2 bg-white dark:bg-zinc-900 border border-black/10 dark:border-zinc-800 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        <div class="space-y-3">
+                            <input type="url" value="${media.url || ''}" oninput="updateMediaRowUrl(${idx}, this.value)" placeholder="${getMediaPlaceholder(media.type)}" class="w-full p-2.5 bg-white dark:bg-zinc-900 border border-black/10 dark:border-zinc-800 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none">
                             
                             ${media.url && media.type === 'image' ? `
-                                <div class="relative rounded-lg overflow-hidden border border-black/10 dark:border-zinc-800 bg-black/10 max-h-24 aspect-video">
+                                <div class="relative rounded-xl overflow-hidden border border-black/10 dark:border-zinc-800 bg-black/15 dark:bg-black/40 aspect-video max-h-40 shadow-inner">
                                     <img src="${media.url}" class="w-full h-full object-cover">
                                 </div>
                             ` : ''}
@@ -1889,6 +1903,8 @@
             }
             currentFormMedia[index].url = '';
             currentFormMedia[index].progress = 0;
+            currentFormMedia[index].status = '';
+            currentFormMedia[index].localPreview = '';
             renderMediaRows();
         }
 
@@ -1896,12 +1912,14 @@
             currentFormMedia[index].source = source;
             currentFormMedia[index].url = '';
             currentFormMedia[index].progress = 0;
+            currentFormMedia[index].status = '';
+            currentFormMedia[index].localPreview = '';
             renderMediaRows();
         }
 
         function updateMediaRowUrl(index, url) {
             currentFormMedia[index].url = url.trim();
-            renderMediaRows(); // Re-render to show remote image cover previews instantly
+            renderMediaRows();
         }
 
         function getMediaPlaceholder(type) {
@@ -1920,6 +1938,13 @@
             if (!file) return;
 
             const mediaType = currentFormMedia[index].type;
+            
+            // Preview instan lokal
+            const localUrl = URL.createObjectURL(file);
+            currentFormMedia[index].localPreview = localUrl;
+            currentFormMedia[index].progress = 0;
+            currentFormMedia[index].status = 'uploading';
+            renderMediaRows();
 
             if (mediaType === 'image') {
                 const reader = new FileReader();
@@ -1953,6 +1978,8 @@
                             uploadBlobToFirebaseStorage(index, webpBase64, `projects/images_${Date.now()}.webp`);
                         } else {
                             currentFormMedia[index].url = webpBase64;
+                            currentFormMedia[index].status = 'complete';
+                            currentFormMedia[index].progress = 100;
                             renderMediaRows();
                             showToast("Gambar berhasil dikompresi ke WebP!");
                         }
@@ -1964,12 +1991,18 @@
                 const maxSize = 15 * 1024 * 1024;
                 if (file.size > maxSize) {
                     showToast("File video terlalu besar! Batas maksimal adalah 15MB.");
+                    currentFormMedia[index].status = '';
+                    currentFormMedia[index].localPreview = '';
+                    renderMediaRows();
                     input.value = '';
                     return;
                 }
 
                 if (!isFirebaseActive) {
-                    showToast("Firebase Storage tidak aktif! Upload video dinonaktifkan. Gunakan Tautan (URL).");
+                    showToast("Firebase Storage tidak aktif! Gunakan Tautan (URL).");
+                    currentFormMedia[index].status = '';
+                    currentFormMedia[index].localPreview = '';
+                    renderMediaRows();
                     input.value = '';
                     return;
                 }
@@ -2001,11 +2034,15 @@
                     }, 
                     (error) => {
                         console.error("Gagal unggah gambar ke Firebase:", error);
-                        showToast("Gagal mengunggah gambar ke cloud.");
+                        currentFormMedia[index].status = 'error';
+                        currentFormMedia[index].progress = 0;
+                        renderMediaRows();
+                        showToast("Gagal mengunggah gambar. Periksa aturan Firebase Storage Anda!");
                     }, 
                     () => {
                         uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
                             currentFormMedia[index].url = downloadURL;
+                            currentFormMedia[index].status = 'complete';
                             currentFormMedia[index].progress = 100;
                             renderMediaRows();
                             showToast("Gambar berhasil diunggah ke Cloud Storage!");
@@ -2030,11 +2067,15 @@
                     }, 
                     (error) => {
                         console.error("Gagal unggah video ke Firebase:", error);
-                        showToast("Gagal mengunggah video ke cloud.");
+                        currentFormMedia[index].status = 'error';
+                        currentFormMedia[index].progress = 0;
+                        renderMediaRows();
+                        showToast("Gagal mengunggah video. Periksa aturan Firebase Storage Anda!");
                     }, 
                     () => {
                         uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
                             currentFormMedia[index].url = downloadURL;
+                            currentFormMedia[index].status = 'complete';
                             currentFormMedia[index].progress = 100;
                             renderMediaRows();
                             showToast("Video berhasil diunggah ke Cloud Storage!");
