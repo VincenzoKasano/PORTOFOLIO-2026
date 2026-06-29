@@ -16,6 +16,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
 
     <script>
         tailwind.config = {
@@ -758,13 +759,21 @@
             <!-- Area Render Konten (Fleksibel Mengikuti Aspek Rasio Media Sosial) -->
             <div id="modalPlayerArea"
                 class="w-full bg-black relative flex items-center justify-center overflow-hidden transition-all duration-300 max-h-[50vh] md:max-h-[60vh] aspect-video">
-                <video id="modalVideo" class="w-full h-full object-contain hidden" controls autoplay muted playsinline
-                    preload="none"></video>
-                <img id="modalImg" class="w-full h-full object-cover hidden" src="" alt="Detail karya">
-                <div id="modalIframeContainer"
-                    class="w-full h-full hidden flex items-center justify-center bg-zinc-950">
-                    <!-- Iframe Dinamis Media Sosial dimuat di sini -->
+                <!-- Carousel Track -->
+                <div id="carouselTrack" class="flex w-full h-full transition-transform duration-500 ease-out">
+                    <!-- Slides are dynamically rendered here -->
                 </div>
+
+                <!-- Navigation Controls -->
+                <button id="carouselPrevBtn" onclick="carouselPrevSlide()" class="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/40 hover:bg-black/60 active:scale-95 text-white flex items-center justify-center transition-all z-20 hidden">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+                </button>
+                <button id="carouselNextBtn" onclick="carouselNextSlide()" class="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/40 hover:bg-black/60 active:scale-95 text-white flex items-center justify-center transition-all z-20 hidden">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                </button>
+
+                <!-- Dots Indicators -->
+                <div id="carouselDots" class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-20"></div>
             </div>
 
             <div class="p-6 md:p-8 overflow-y-auto border-t border-black/[0.05] dark:border-white/[0.05]">
@@ -810,98 +819,26 @@
                     <input type="text" id="formTitle" required placeholder="Contoh: Video Cinematic Intro"
                         class="w-full p-3 bg-white dark:bg-zinc-900 border border-black/10 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none">
                 </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block font-medium mb-1.5 opacity-80"
-                            data-localize="lbl_proj_category">Kategori</label>
-                        <input type="text" id="formCategory" required placeholder="Contoh: Editor, Photographer"
-                            class="w-full p-3 bg-white dark:bg-zinc-900 border border-black/10 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                    </div>
-                    <div>
-                        <label class="block font-medium mb-1.5 opacity-80">Sumber Media (Platform)</label>
-                        <select id="formMediaType" onchange="handleMediaTypeChange()"
-                            class="w-full p-3 bg-white dark:bg-zinc-900 border border-black/10 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                            <option value="image">Gambar / Cover Saja</option>
-                            <option value="video">Direct Video MP4</option>
-                            <option value="youtube">YouTube (Video / Shorts)</option>
-                            <option value="instagram">Instagram (Post / Reels)</option>
-                            <option value="tiktok">TikTok Video</option>
-                            <option value="drive">Google Drive File</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Bagian Cover Image: Tab Selector (Upload File vs Input URL) -->
                 <div>
-                    <label class="block font-medium mb-1.5 opacity-80">Cover Image / Thumbnail</label>
-                    <div
-                        class="flex border border-black/10 dark:border-zinc-800 rounded-lg p-1 bg-black/5 dark:bg-black/30 mb-3">
-                        <button type="button" id="tabUpload" onclick="switchCoverTab('upload')"
-                            class="flex-1 text-center py-1.5 text-xs font-semibold rounded-md bg-white dark:bg-zinc-800 text-blue-500 shadow-sm transition-all">
-                            📷 Upload File (Auto WebP)
-                        </button>
-                        <button type="button" id="tabUrl" onclick="switchCoverTab('url')"
-                            class="flex-1 text-center py-1.5 text-xs font-semibold rounded-md text-zinc-500 dark:text-zinc-400 transition-all">
-                            🔗 Tempel Link URL
-                        </button>
-                    </div>
-
-                    <!-- Input 1: File Uploader dengan Auto-Resize WebP -->
-                    <div id="coverUploadGroup" class="space-y-3">
-                        <div class="flex items-center justify-center w-full">
-                            <label
-                                class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-black/10 dark:border-zinc-800 hover:border-blue-500 dark:hover:border-blue-500 rounded-xl cursor-pointer bg-white dark:bg-zinc-900 transition-all">
-                                <div class="flex flex-col items-center justify-center pt-5 pb-6 text-center px-4">
-                                    <svg class="w-8 h-8 text-zinc-400 mb-2" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
-                                        </path>
-                                    </svg>
-                                    <p class="text-xs text-zinc-500 dark:text-zinc-400"><span
-                                            class="font-bold text-blue-500">Klik untuk upload foto</span> atau drag and
-                                        drop</p>
-                                    <p class="text-[10px] text-zinc-400 mt-1">Sistem otomatis mengompres ke .WebP &
-                                        Potong 16:9</p>
-                                </div>
-                                <input type="file" id="formImgFile" accept="image/*" class="hidden"
-                                    onchange="handleFileWebPConversion(this)">
-                            </label>
-                        </div>
-
-                        <!-- Mini Preview Box -->
-                        <div id="imgFilePreviewContainer"
-                            class="hidden relative rounded-xl overflow-hidden border border-black/10 dark:border-zinc-800 bg-black/10 aspect-video">
-                            <img id="imgFilePreview" src="" class="w-full h-full object-cover">
-                            <button type="button" onclick="clearSelectedFile()"
-                                class="absolute top-2 right-2 p-1.5 bg-black/60 hover:bg-black/85 text-white rounded-full transition-all">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M6 18L18 6M6 6l12 12"></path>
-                                </svg>
-                            </button>
-                            <span
-                                class="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-emerald-500 text-[9px] text-white font-bold tracking-wider uppercase shadow">
-                                WebP Optimized 16:9
-                            </span>
-                        </div>
-                    </div>
-
-                    <!-- Input 2: URL Image Biasa -->
-                    <div id="coverUrlGroup" class="hidden">
-                        <input type="url" id="formImgUrl" placeholder="Contoh: https://images.unsplash.com/..."
-                            class="w-full p-3 bg-white dark:bg-zinc-900 border border-black/10 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                    </div>
-                </div>
-
-                <div>
-                    <label id="formVideoUrlLabel" class="block font-medium mb-1.5 opacity-80">URL Video / Link Social
-                        Media</label>
-                    <input type="text" id="formVideoUrl" placeholder="Contoh: https://www.instagram.com/reel/..."
+                    <label class="block font-medium mb-1.5 opacity-80"
+                        data-localize="lbl_proj_category">Kategori</label>
+                    <input type="text" id="formCategory" required placeholder="Contoh: Editor, Photographer"
                         class="w-full p-3 bg-white dark:bg-zinc-900 border border-black/10 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                    <p id="formUrlHint" class="text-[11px] text-zinc-500 dark:text-zinc-500 mt-1 pl-1">Pilih sumber
-                        media untuk petunjuk input.</p>
+                </div>
+
+                <!-- BAGIAN MULTI-MEDIA (MAKSIMAL 6) -->
+                <div class="border-t border-b border-black/5 dark:border-zinc-800 py-4 my-2">
+                    <div class="flex items-center justify-between mb-3">
+                        <label class="font-bold text-sm tracking-tight opacity-90">Galeri Media Portofolio (Maks 6)</label>
+                        <span id="mediaCountIndicator" class="text-xs text-zinc-400 font-mono">0 / 6</span>
+                    </div>
+                    <div id="mediaItemsContainer" class="space-y-4">
+                        <!-- Baris input media akan dimuat secara dinamis via JS -->
+                    </div>
+                    <button type="button" id="btnAddMediaItem" onclick="addMediaItemRow()"
+                        class="mt-3 w-full py-2.5 px-4 text-xs font-semibold rounded-xl border border-dashed border-blue-500/30 hover:border-blue-500 bg-blue-500/5 hover:bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:scale-[1.01] active:scale-95 transition-all flex items-center justify-center gap-1.5">
+                        ➕ Tambah Foto / Video
+                    </button>
                 </div>
 
                 <div>
@@ -978,6 +915,7 @@
         // Inisialisasi Firebase jika config telah diisi
         let db = null;
         let auth = null;
+        let storage = null;
         let isFirebaseActive = false;
 
         if (firebaseConfig.apiKey !== "YOUR_API_KEY_HERE" && firebaseConfig.apiKey !== "") {
@@ -985,6 +923,7 @@
                 firebase.initializeApp(firebaseConfig);
                 db = firebase.firestore();
                 auth = firebase.auth();
+                storage = firebase.storage();
                 isFirebaseActive = true;
                 console.log("Firebase berhasil diinisialisasi!");
             } catch (e) {
@@ -1508,6 +1447,7 @@
                             imageUrl: data.imageUrl || "",
                             videoUrl: data.videoUrl || "",
                             mediaType: data.mediaType || "image",
+                            mediaList: data.mediaList || [],
                             isFeatured: data.isFeatured || false,
                             views: data.views || 0,
                             createdAt: data.createdAt
@@ -1633,9 +1573,9 @@
 
         // Modal Media
         const mediaModal = document.getElementById('mediaModal');
-        const modalVideo = document.getElementById('modalVideo');
-        const modalImg = document.getElementById('modalImg');
-        const modalIframeContainer = document.getElementById('modalIframeContainer');
+        const modalVideo = null;
+        const modalImg = null;
+        const modalIframeContainer = null;
         const modalTitle = document.getElementById('modalTitle');
         const modalCategory = document.getElementById('modalCategory');
         const modalDesc = document.getElementById('modalDesc');
@@ -1835,135 +1775,275 @@
             return url; // fallback jika sudah berupa link embed / tidak dikenal
         }
 
-        function handleMediaTypeChange() {
-            const select = document.getElementById('formMediaType');
-            const val = select.value;
-            const inputLabel = document.getElementById('formVideoUrlLabel');
-            const inputField = document.getElementById('formVideoUrl');
-            const hint = document.getElementById('formUrlHint');
+        let currentFormMedia = [];
 
-            inputField.required = (val !== 'image');
+        function renderMediaRows() {
+            const container = document.getElementById('mediaItemsContainer');
+            container.innerHTML = '';
+            
+            currentFormMedia.forEach((media, idx) => {
+                const row = document.createElement('div');
+                row.className = "p-4 rounded-xl border border-black/5 dark:border-zinc-800 bg-white/50 dark:bg-black/20 space-y-3 relative";
+                
+                let inputFieldHtml = '';
+                if (media.source === 'upload' && (media.type === 'image' || media.type === 'video')) {
+                    inputFieldHtml = `
+                        <div class="space-y-2">
+                            <input type="file" onchange="handleMediaFileSelect(${idx}, this)" accept="${media.type === 'image' ? 'image/*' : 'video/mp4'}" class="w-full text-xs text-zinc-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-500/10 file:text-blue-600 dark:file:bg-blue-500/20 dark:file:text-blue-400 hover:file:opacity-80">
+                            
+                            ${media.progress > 0 && media.progress < 100 ? `
+                                <div class="w-full bg-black/5 dark:bg-white/5 rounded-full h-1.5 overflow-hidden">
+                                    <div class="bg-blue-500 h-1.5 rounded-full transition-all duration-300" style="width: ${media.progress}%"></div>
+                                </div>
+                                <span class="text-[10px] text-zinc-400 font-mono">Mengunggah... ${media.progress}%</span>
+                            ` : ''}
 
-            if (val === 'image') {
-                inputLabel.textContent = "URL Video / Link Social Media (Opsional)";
-                hint.textContent = "Media berupa gambar statis murni. Input link video bisa dikosongkan.";
-                inputField.placeholder = "Kosongkan saja";
-            } else if (val === 'video') {
-                inputLabel.textContent = "URL Video Direct (.mp4)";
-                hint.textContent = "Masukkan link video direct berformat MP4 agar diputar di video player internal.";
-                inputField.placeholder = "https://example.com/assets/video.mp4";
-            } else if (val === 'youtube') {
-                inputLabel.textContent = "Link Video / Shorts YouTube";
-                hint.textContent = "Tempel link sharing biasa dari YouTube. Program otomatis mendeteksi dan mengonversi link YouTube Shorts.";
-                inputField.placeholder = "https://www.youtube.com/watch?v=SshsX6A_b8w atau https://youtu.be/...";
-            } else if (val === 'instagram') {
-                inputLabel.textContent = "Link Postingan / Reels Instagram";
-                hint.textContent = "Tempel link post atau reels Instagram dari browser. Iframe akan memuat preview interaktif instagram.";
-                inputField.placeholder = "https://www.instagram.com/reel/C_abc123/";
-            } else if (val === 'tiktok') {
-                inputLabel.textContent = "Link Video TikTok";
-                hint.textContent = "Pastikan link berisi ID Video TikTok untuk merender player asli TikTok di modal.";
-                inputField.placeholder = "https://www.tiktok.com/@username/video/1234567890123456789";
-            } else if (val === 'drive') {
-                inputLabel.textContent = "Link Berbagi File Google Drive";
-                hint.textContent = "Pastikan file Drive disetel 'Siapa saja yang memiliki link dapat melihat', lalu tempel link berbaginya di sini.";
-                inputField.placeholder = "https://drive.google.com/file/d/FILE_ID/view?usp=sharing";
-            }
-        }
+                            ${media.url ? `
+                                <div class="relative rounded-lg overflow-hidden border border-black/10 dark:border-zinc-800 bg-black/10 max-h-24 aspect-video flex items-center justify-center">
+                                    ${media.type === 'image' ? `
+                                        <img src="${media.url}" class="w-full h-full object-cover">
+                                    ` : `
+                                        <video src="${media.url}" class="w-full h-full object-contain" muted controls></video>
+                                    `}
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                } else {
+                    inputFieldHtml = `
+                        <div class="space-y-2">
+                            <input type="url" value="${media.url || ''}" oninput="updateMediaRowUrl(${idx}, this.value)" placeholder="${getMediaPlaceholder(media.type)}" class="w-full p-2 bg-white dark:bg-zinc-900 border border-black/10 dark:border-zinc-800 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            
+                            ${media.url && media.type === 'image' ? `
+                                <div class="relative rounded-lg overflow-hidden border border-black/10 dark:border-zinc-800 bg-black/10 max-h-24 aspect-video">
+                                    <img src="${media.url}" class="w-full h-full object-cover">
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                }
 
-        /************************************************************************
-         * 🛠️ SISTEM CLIENT-SIDE COMPRESSOR TO WEBP & ASPECT RATIO 16:9
-         ************************************************************************/
-        function switchCoverTab(tabType) {
-            activeCoverTab = tabType;
-            const btnUpload = document.getElementById('tabUpload');
-            const btnUrl = document.getElementById('tabUrl');
-            const groupUpload = document.getElementById('coverUploadGroup');
-            const groupUrl = document.getElementById('coverUrlGroup');
-            const imgUrlField = document.getElementById('formImgUrl');
+                row.innerHTML = `
+                    <div class="flex items-center justify-between gap-3">
+                        <span class="text-xs font-bold text-zinc-400 font-mono flex items-center gap-1">
+                            ${idx === 0 ? '👑 Cover Utama' : `Media #${idx + 1}`}
+                        </span>
+                        <button type="button" onclick="removeMediaRow(${idx})" class="text-xs text-rose-500 hover:text-rose-600 font-medium">Hapus</button>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold mb-1 opacity-70">Tipe Media</label>
+                            <select onchange="updateMediaRowType(${idx}, this.value)" class="w-full p-2 bg-white dark:bg-zinc-900 border border-black/10 dark:border-zinc-800 rounded-lg text-xs focus:outline-none">
+                                <option value="image" ${media.type === 'image' ? 'selected' : ''}>Gambar (Image)</option>
+                                <option value="video" ${media.type === 'video' ? 'selected' : ''}>Video MP4</option>
+                                <option value="youtube" ${media.type === 'youtube' ? 'selected' : ''}>YouTube</option>
+                                <option value="instagram" ${media.type === 'instagram' ? 'selected' : ''}>Instagram</option>
+                                <option value="tiktok" ${media.type === 'tiktok' ? 'selected' : ''}>TikTok</option>
+                                <option value="drive" ${media.type === 'drive' ? 'selected' : ''}>Google Drive</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold mb-1 opacity-70">Sumber</label>
+                            <select onchange="updateMediaRowSource(${idx}, this.value)" class="w-full p-2 bg-white dark:bg-zinc-900 border border-black/10 dark:border-zinc-800 rounded-lg text-xs focus:outline-none" ${media.type !== 'image' && media.type !== 'video' ? 'disabled' : ''}>
+                                <option value="url" ${media.source === 'url' ? 'selected' : ''}>Tautan (URL)</option>
+                                <option value="upload" ${media.source === 'upload' ? 'selected' : ''}>Unggah File</option>
+                            </select>
+                        </div>
+                    </div>
 
-            if (tabType === 'upload') {
-                btnUpload.className = "flex-1 text-center py-1.5 text-xs font-semibold rounded-md bg-white dark:bg-zinc-800 text-blue-500 shadow-sm transition-all";
-                btnUrl.className = "flex-1 text-center py-1.5 text-xs font-semibold rounded-md text-zinc-500 dark:text-zinc-400 transition-all";
-                groupUpload.classList.remove('hidden');
-                groupUrl.classList.add('hidden');
-                imgUrlField.required = false;
+                    <div class="media-input-wrapper">
+                        ${inputFieldHtml}
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+            
+            document.getElementById('mediaCountIndicator').textContent = `${currentFormMedia.length} / 6`;
+            
+            const addBtn = document.getElementById('btnAddMediaItem');
+            if (currentFormMedia.length >= 6) {
+                addBtn.disabled = true;
+                addBtn.classList.add('opacity-50', 'cursor-not-allowed');
             } else {
-                btnUpload.className = "flex-1 text-center py-1.5 text-xs font-semibold rounded-md text-zinc-500 dark:text-zinc-400 transition-all";
-                btnUrl.className = "flex-1 text-center py-1.5 text-xs font-semibold rounded-md bg-white dark:bg-zinc-800 text-blue-500 shadow-sm transition-all";
-                groupUpload.classList.add('hidden');
-                groupUrl.classList.remove('hidden');
-                imgUrlField.required = true;
+                addBtn.disabled = false;
+                addBtn.classList.remove('opacity-50', 'cursor-not-allowed');
             }
         }
 
-        function handleFileWebPConversion(input) {
+        function addMediaItemRow() {
+            if (currentFormMedia.length >= 6) return;
+            currentFormMedia.push({ type: 'image', source: 'url', url: '', progress: 0 });
+            renderMediaRows();
+        }
+
+        function removeMediaRow(index) {
+            currentFormMedia.splice(index, 1);
+            renderMediaRows();
+        }
+
+        function updateMediaRowType(index, type) {
+            currentFormMedia[index].type = type;
+            if (type !== 'image' && type !== 'video') {
+                currentFormMedia[index].source = 'url';
+            }
+            currentFormMedia[index].url = '';
+            currentFormMedia[index].progress = 0;
+            renderMediaRows();
+        }
+
+        function updateMediaRowSource(index, source) {
+            currentFormMedia[index].source = source;
+            currentFormMedia[index].url = '';
+            currentFormMedia[index].progress = 0;
+            renderMediaRows();
+        }
+
+        function updateMediaRowUrl(index, url) {
+            currentFormMedia[index].url = url.trim();
+            renderMediaRows(); // Re-render to show remote image cover previews instantly
+        }
+
+        function getMediaPlaceholder(type) {
+            switch(type) {
+                case 'youtube': return 'https://www.youtube.com/watch?v=... atau Shorts';
+                case 'instagram': return 'https://www.instagram.com/reel/... atau Post';
+                case 'tiktok': return 'https://www.tiktok.com/@username/video/...';
+                case 'drive': return 'https://drive.google.com/file/d/FILE_ID/view?usp=sharing';
+                case 'video': return 'https://example.com/assets/video.mp4';
+                default: return 'https://images.unsplash.com/photo-...';
+            }
+        }
+
+        function handleMediaFileSelect(index, input) {
             const file = input.files[0];
             if (!file) return;
 
-            const previewContainer = document.getElementById('imgFilePreviewContainer');
-            const previewImg = document.getElementById('imgFilePreview');
-            const submitBtn = document.getElementById('btnSubmitProject');
-            const submitText = document.getElementById('submitBtnText');
-            const submitSpinner = document.getElementById('submitBtnSpinner');
+            const mediaType = currentFormMedia[index].type;
 
-            // Aktifkan loading spinner pada form
-            submitBtn.disabled = true;
-            submitText.textContent = "Mengonversi ke .WebP...";
-            submitSpinner.classList.remove('hidden');
+            if (mediaType === 'image') {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        
+                        const targetWidth = 800;
+                        const targetHeight = 450;
+                        canvas.width = targetWidth;
+                        canvas.height = targetHeight;
+                        
+                        const imgRatio = img.width / img.height;
+                        const targetRatio = targetWidth / targetHeight;
+                        let sx = 0, sy = 0, sWidth = img.width, sHeight = img.height;
 
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                const img = new Image();
-                img.onload = function () {
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
+                        if (imgRatio > targetRatio) {
+                            sWidth = img.height * targetRatio;
+                            sx = (img.width - sWidth) / 2;
+                        } else {
+                            sHeight = img.width / targetRatio;
+                            sy = (img.height - sHeight) / 2;
+                        }
 
-                    // Rasio Target Emas 16:9 (Ideal lebar 800px demi performa kilat mobile Chrome)
-                    const targetWidth = 800;
-                    const targetHeight = 450;
-                    canvas.width = targetWidth;
-                    canvas.height = targetHeight;
+                        ctx.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, targetWidth, targetHeight);
+                        const webpBase64 = canvas.toDataURL('image/webp', 0.75);
 
-                    // Mengalkulasi Center-Cropping (Pemotongan Tengah agar tidak gepeng)
-                    const imgRatio = img.width / img.height;
-                    const targetRatio = targetWidth / targetHeight;
-                    let sx = 0, sy = 0, sWidth = img.width, sHeight = img.height;
-
-                    if (imgRatio > targetRatio) {
-                        sWidth = img.height * targetRatio;
-                        sx = (img.width - sWidth) / 2;
-                    } else {
-                        sHeight = img.width / targetRatio;
-                        sy = (img.height - sHeight) / 2;
-                    }
-
-                    // Gambar di atas Canvas dengan cropping yang presisi
-                    ctx.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, targetWidth, targetHeight);
-
-                    // Konversikan langsung ke .webp dengan kualitas kompresi premium seimbang (75%)
-                    processedWebpBase64 = canvas.toDataURL('image/webp', 0.75);
-
-                    // Tampilkan preview instan
-                    previewImg.src = processedWebpBase64;
-                    previewContainer.classList.remove('hidden');
-
-                    // Matikan loading spinner
-                    submitBtn.disabled = false;
-                    submitText.textContent = "Masukkan ke Galeri Sekarang!";
-                    submitSpinner.classList.add('hidden');
-                    showToast("Foto berhasil dikonversi ke WebP & dicrop 16:9!");
+                        if (isFirebaseActive) {
+                            uploadBlobToFirebaseStorage(index, webpBase64, `projects/images_${Date.now()}.webp`);
+                        } else {
+                            currentFormMedia[index].url = webpBase64;
+                            renderMediaRows();
+                            showToast("Gambar berhasil dikompresi ke WebP!");
+                        }
+                    };
+                    img.src = e.target.result;
                 };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
+                reader.readAsDataURL(file);
+            } else if (mediaType === 'video') {
+                const maxSize = 15 * 1024 * 1024;
+                if (file.size > maxSize) {
+                    showToast("File video terlalu besar! Batas maksimal adalah 15MB.");
+                    input.value = '';
+                    return;
+                }
+
+                if (!isFirebaseActive) {
+                    showToast("Firebase Storage tidak aktif! Upload video dinonaktifkan. Gunakan Tautan (URL).");
+                    input.value = '';
+                    return;
+                }
+
+                uploadFileToFirebaseStorage(index, file, `projects/videos/${Date.now()}_${file.name}`);
+            }
         }
 
-        function clearSelectedFile() {
-            document.getElementById('formImgFile').value = '';
-            document.getElementById('imgFilePreviewContainer').classList.add('hidden');
-            document.getElementById('imgFilePreview').src = '';
-            processedWebpBase64 = '';
+        function dataURLtoBlob(dataurl) {
+            var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+                bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+            while(n--){
+                u8arr[n] = bstr.charCodeAt(n);
+            }
+            return new Blob([u8arr], {type:mime});
+        }
+
+        function uploadBlobToFirebaseStorage(index, base64Data, path) {
+            try {
+                const blob = dataURLtoBlob(base64Data);
+                const ref = storage.ref().child(path);
+                const uploadTask = ref.put(blob);
+
+                uploadTask.on('state_changed', 
+                    (snapshot) => {
+                        const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+                        currentFormMedia[index].progress = progress;
+                        renderMediaRows();
+                    }, 
+                    (error) => {
+                        console.error("Gagal unggah gambar ke Firebase:", error);
+                        showToast("Gagal mengunggah gambar ke cloud.");
+                    }, 
+                    () => {
+                        uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+                            currentFormMedia[index].url = downloadURL;
+                            currentFormMedia[index].progress = 100;
+                            renderMediaRows();
+                            showToast("Gambar berhasil diunggah ke Cloud Storage!");
+                        });
+                    }
+                );
+            } catch(e) {
+                console.error("Kesalahan upload blob:", e);
+            }
+        }
+
+        function uploadFileToFirebaseStorage(index, file, path) {
+            try {
+                const ref = storage.ref().child(path);
+                const uploadTask = ref.put(file);
+
+                uploadTask.on('state_changed', 
+                    (snapshot) => {
+                        const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+                        currentFormMedia[index].progress = progress;
+                        renderMediaRows();
+                    }, 
+                    (error) => {
+                        console.error("Gagal unggah video ke Firebase:", error);
+                        showToast("Gagal mengunggah video ke cloud.");
+                    }, 
+                    () => {
+                        uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+                            currentFormMedia[index].url = downloadURL;
+                            currentFormMedia[index].progress = 100;
+                            renderMediaRows();
+                            showToast("Video berhasil diunggah ke Cloud Storage!");
+                        });
+                    }
+                );
+            } catch(e) {
+                console.error("Kesalahan upload file:", e);
+            }
         }
 
         // Render card proyek ke grid
@@ -2112,58 +2192,123 @@
             }
         }
 
-        function openProjectDetails(id) {
-            const project = MY_PROJECTS.find(p => p.id === id);
-            if (!project) return;
+        let carouselCurrentIndex = 0;
+        let carouselMediaItems = [];
 
-            // Naikkan views counter
-            incrementProjectViews(id);
-
-            // Bersihkan frame modal
-            modalVideo.classList.add('hidden');
-            modalImg.classList.add('hidden');
-            modalIframeContainer.classList.add('hidden');
-            modalVideo.src = "";
-            modalImg.src = "";
-            modalIframeContainer.innerHTML = "";
-
-            const mType = project.mediaType || 'image';
-
-            // Menyesuaikan Aspek Rasio Modal Player demi kenyamanan HP (Potrait untuk Reels/TikTok)
-            modalPlayerArea.className = "w-full bg-black relative flex items-center justify-center overflow-hidden transition-all duration-300";
-            if (mType === 'tiktok' || mType === 'instagram') {
-                modalPlayerArea.classList.add('aspect-[9/11]', 'max-h-[70vh]');
-            } else {
-                modalPlayerArea.classList.add('aspect-video', 'max-h-[50vh]', 'md:max-h-[60vh]');
+        function renderCarousel(mediaList) {
+            const track = document.getElementById('carouselTrack');
+            const prevBtn = document.getElementById('carouselPrevBtn');
+            const nextBtn = document.getElementById('carouselNextBtn');
+            const dots = document.getElementById('carouselDots');
+            
+            track.innerHTML = '';
+            dots.innerHTML = '';
+            carouselCurrentIndex = 0;
+            carouselMediaItems = mediaList;
+            
+            if (!mediaList || mediaList.length === 0) {
+                track.innerHTML = `<div class="w-full h-full flex items-center justify-center text-zinc-500 text-sm">Tidak ada media.</div>`;
+                prevBtn.classList.add('hidden');
+                nextBtn.classList.add('hidden');
+                return;
             }
-
-            const currentTitle = currentLang === 'id' ? project.title_id : project.title_en;
-            const currentCategory = currentLang === 'id' ? project.category_id : project.category_en;
-            const currentDesc = currentLang === 'id' ? project.description_id : project.description_en;
-
-            // Memilih badge platform
-            modalSourceBadge.textContent = mType;
-            modalSourceBadge.className = "text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider ";
-
-            if (mType === 'youtube') modalSourceBadge.classList.add('bg-rose-500/20', 'text-rose-600', 'dark:text-rose-400');
-            else if (mType === 'instagram') modalSourceBadge.classList.add('bg-purple-500/20', 'text-purple-600', 'dark:text-purple-400');
-            else if (mType === 'tiktok') modalSourceBadge.classList.add('bg-zinc-500/20', 'text-zinc-600', 'dark:text-zinc-400');
-            else if (mType === 'drive') modalSourceBadge.classList.add('bg-emerald-500/20', 'text-emerald-600', 'dark:text-emerald-400');
-            else if (mType === 'video') modalSourceBadge.classList.add('bg-blue-500/20', 'text-blue-600', 'dark:text-blue-400');
-            else modalSourceBadge.classList.add('bg-zinc-500/10', 'text-zinc-500');
-
-            // Render Berdasarkan Tipe Media
-            if (mType === 'image') {
-                modalImg.classList.remove('hidden');
-                modalImg.src = project.imageUrl;
-            } else if (mType === 'video') {
-                modalVideo.classList.remove('hidden');
-                modalVideo.src = project.videoUrl;
+            
+            mediaList.forEach((media, idx) => {
+                const slide = document.createElement('div');
+                slide.className = "w-full flex-shrink-0 h-full flex items-center justify-center relative";
+                
+                if (media.type === 'image') {
+                    slide.innerHTML = `<img src="${media.url}" class="w-full h-full object-cover" alt="Slide ${idx+1}">`;
+                } else if (media.type === 'video') {
+                    const srcAttr = idx === 0 ? `src="${media.url}"` : `data-src="${media.url}"`;
+                    slide.innerHTML = `<video ${srcAttr} class="w-full h-full object-contain" controls muted playsinline preload="none"></video>`;
+                } else {
+                    slide.innerHTML = `
+                        <div class="w-full h-full flex items-center justify-center bg-zinc-950">
+                            <div class="w-full h-full iframe-placeholder flex flex-col items-center justify-center gap-2 text-zinc-500 cursor-pointer" onclick="activateIframe(${idx})">
+                                <span class="text-xs uppercase tracking-widest font-bold">${media.type} Media</span>
+                                <span class="text-[10px] text-zinc-400">Klik untuk memuat & putar</span>
+                            </div>
+                            <div class="w-full h-full iframe-container hidden" data-type="${media.type}" data-url="${media.url}"></div>
+                        </div>
+                    `;
+                }
+                track.appendChild(slide);
+                
+                const dot = document.createElement('button');
+                dot.className = `w-2 h-2 rounded-full transition-all ${idx === 0 ? 'bg-blue-500 scale-125' : 'bg-white/40 hover:bg-white/60'}`;
+                dot.onclick = () => carouselGoToSlide(idx);
+                dots.appendChild(dot);
+            });
+            
+            if (mediaList.length > 1) {
+                prevBtn.classList.remove('hidden');
+                nextBtn.classList.remove('hidden');
             } else {
-                // Gunakan Smart URL Parser untuk platform social media & Drive
-                const embedUrl = getEmbedUrl(project.videoUrl, mType);
-                modalIframeContainer.classList.remove('hidden');
-                modalIframeContainer.innerHTML = `
+                prevBtn.classList.add('hidden');
+                nextBtn.classList.add('hidden');
+            }
+            
+            track.style.transform = `translateX(0%)`;
+            loadActiveSlideMedia(0);
+        }
+
+        function carouselGoToSlide(index) {
+            if (index < 0 || index >= carouselMediaItems.length) return;
+            
+            pauseSlideMedia(carouselCurrentIndex);
+            
+            carouselCurrentIndex = index;
+            const track = document.getElementById('carouselTrack');
+            track.style.transform = `translateX(-${index * 100}%)`;
+            
+            const dots = document.getElementById('carouselDots').children;
+            for (let i = 0; i < dots.length; i++) {
+                if (i === index) {
+                    dots[i].className = "w-2 h-2 rounded-full bg-blue-500 scale-125 transition-all";
+                } else {
+                    dots[i].className = "w-2 h-2 rounded-full bg-white/40 hover:bg-white/60 transition-all";
+                }
+            }
+            
+            loadActiveSlideMedia(index);
+        }
+
+        function carouselPrevSlide() {
+            let idx = carouselCurrentIndex - 1;
+            if (idx < 0) idx = carouselMediaItems.length - 1;
+            carouselGoToSlide(idx);
+        }
+
+        function carouselNextSlide() {
+            let idx = carouselCurrentIndex + 1;
+            if (idx >= carouselMediaItems.length) idx = 0;
+            carouselGoToSlide(idx);
+        }
+
+        function loadActiveSlideMedia(index) {
+            const track = document.getElementById('carouselTrack');
+            const slide = track.children[index];
+            if (!slide) return;
+            
+            const media = carouselMediaItems[index];
+            
+            const video = slide.querySelector('video');
+            if (video && !video.src) {
+                video.src = video.getAttribute('data-src');
+                video.load();
+            }
+            if (video) {
+                video.play().catch(e => console.log("Video autoplay blocked:", e));
+            }
+            
+            const placeholder = slide.querySelector('.iframe-placeholder');
+            const container = slide.querySelector('.iframe-container');
+            if (container && container.innerHTML === '') {
+                if (placeholder) placeholder.classList.add('hidden');
+                container.classList.remove('hidden');
+                const embedUrl = getEmbedUrl(container.getAttribute('data-url'), container.getAttribute('data-type'));
+                container.innerHTML = `
                     <iframe 
                         class="w-full h-full" 
                         src="${embedUrl}" 
@@ -2172,12 +2317,76 @@
                         allowfullscreen>
                     </iframe>`;
             }
+            
+            const modalPlayerArea = document.getElementById('modalPlayerArea');
+            modalPlayerArea.className = "w-full bg-black relative flex items-center justify-center overflow-hidden transition-all duration-300";
+            if (media.type === 'tiktok' || media.type === 'instagram') {
+                modalPlayerArea.classList.add('aspect-[9/11]', 'max-h-[70vh]');
+            } else {
+                modalPlayerArea.classList.add('aspect-video', 'max-h-[50vh]', 'md:max-h-[60vh]');
+            }
+            
+            const modalSourceBadge = document.getElementById('modalSourceBadge');
+            modalSourceBadge.textContent = media.type;
+            modalSourceBadge.className = "text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider ";
+            
+            if (media.type === 'youtube') modalSourceBadge.classList.add('bg-rose-500/20', 'text-rose-600', 'dark:text-rose-400');
+            else if (media.type === 'instagram') modalSourceBadge.classList.add('bg-purple-500/20', 'text-purple-600', 'dark:text-purple-400');
+            else if (media.type === 'tiktok') modalSourceBadge.classList.add('bg-zinc-500/20', 'text-zinc-600', 'dark:text-zinc-400');
+            else if (media.type === 'drive') modalSourceBadge.classList.add('bg-emerald-500/20', 'text-emerald-600', 'dark:text-emerald-400');
+            else if (media.type === 'video') modalSourceBadge.classList.add('bg-blue-500/20', 'text-blue-600', 'dark:text-blue-400');
+            else modalSourceBadge.classList.add('bg-zinc-500/10', 'text-zinc-500');
+        }
+
+        function pauseSlideMedia(index) {
+            const track = document.getElementById('carouselTrack');
+            const slide = track.children[index];
+            if (!slide) return;
+            
+            const video = slide.querySelector('video');
+            if (video) {
+                video.pause();
+            }
+            
+            const container = slide.querySelector('.iframe-container');
+            const placeholder = slide.querySelector('.iframe-placeholder');
+            if (container && container.innerHTML !== '') {
+                container.innerHTML = '';
+                container.classList.add('hidden');
+                if (placeholder) placeholder.classList.remove('hidden');
+            }
+        }
+        
+        function activateIframe(index) {
+            loadActiveSlideMedia(index);
+        }
+
+        function openProjectDetails(id) {
+            const project = MY_PROJECTS.find(p => p.id === id);
+            if (!project) return;
+
+            incrementProjectViews(id);
+
+            const currentTitle = currentLang === 'id' ? project.title_id : project.title_en;
+            const currentCategory = currentLang === 'id' ? project.category_id : project.category_en;
+            const currentDesc = currentLang === 'id' ? project.description_id : project.description_en;
+
+            // Backward compatibility for legacy single-media projects
+            let list = project.mediaList;
+            if (!list || list.length === 0) {
+                list = [{
+                    type: project.mediaType || 'image',
+                    source: project.videoUrl ? 'url' : (project.imageUrl.startsWith('data:image') ? 'upload' : 'url'),
+                    url: project.videoUrl || project.imageUrl
+                }];
+            }
+
+            renderCarousel(list);
 
             modalTitle.textContent = currentTitle;
             modalCategory.textContent = currentCategory;
             modalDesc.textContent = currentDesc;
 
-            // Tampilkan jumlah views terbaru di modal
             const currentViews = (project.views || 0) + 1;
             document.getElementById('modalViews').querySelector('span').textContent = currentViews.toLocaleString();
 
@@ -2189,10 +2398,12 @@
 
         function closeMediaModal() {
             mediaModal.classList.remove('opacity-100');
+            for (let i = 0; i < carouselMediaItems.length; i++) {
+                pauseSlideMedia(i);
+            }
             setTimeout(() => {
                 mediaModal.classList.add('hidden');
-                modalVideo.src = "";
-                modalIframeContainer.innerHTML = "";
+                document.getElementById('carouselTrack').innerHTML = '';
             }, 300);
         }
 
@@ -2205,9 +2416,10 @@
             document.getElementById('submitBtnText').textContent = "Masukkan ke Galeri Sekarang!";
             document.getElementById('addProjectForm').reset();
 
-            // Kembalikan ke tab upload bawaan
-            switchCoverTab('upload');
-            clearSelectedFile();
+            // Mulai dengan 1 baris media kosong
+            currentFormMedia = [{ type: 'image', source: 'url', url: '', progress: 0 }];
+            renderMediaRows();
+
             addProjectModal.classList.remove('hidden');
             setTimeout(() => {
                 addProjectModal.classList.add('opacity-100');
@@ -2218,7 +2430,7 @@
             addProjectModal.classList.remove('opacity-100');
             setTimeout(() => {
                 addProjectModal.classList.add('hidden');
-                clearSelectedFile();
+                currentFormMedia = [];
                 editingProjectId = null; // Bersihkan status edit
             }, 300);
         }
@@ -2233,26 +2445,22 @@
             // Isi nilai form dengan data proyek yang sudah ada
             document.getElementById('formTitle').value = project.title_id || project.title_en || '';
             document.getElementById('formCategory').value = project.category_id || project.category_en || '';
-            document.getElementById('formVideoUrl').value = project.videoUrl || '';
-            document.getElementById('formMediaType').value = project.mediaType || 'image';
-            handleMediaTypeChange(); // Sesuaikan validasi input
+            document.getElementById('formDesc').value = project.description_id || project.description_en || '';
 
-            // Set media cover image
-            if (project.imageUrl.startsWith('data:image')) {
-                processedWebpBase64 = project.imageUrl;
-                document.getElementById('imgFilePreview').src = project.imageUrl;
-                document.getElementById('imgFilePreviewContainer').classList.remove('hidden');
-                document.getElementById('formImgUrl').value = '';
-                switchCoverTab('upload');
-            } else {
-                processedWebpBase64 = '';
-                document.getElementById('imgFilePreview').src = '';
-                document.getElementById('imgFilePreviewContainer').classList.add('hidden');
-                document.getElementById('formImgUrl').value = project.imageUrl || '';
-                switchCoverTab('url');
+            // Muat baris media dari project data
+            let list = project.mediaList;
+            if (!list || list.length === 0) {
+                // Konfigurasi kompatibilitas portofolio single-media lama
+                list = [{
+                    type: project.mediaType || 'image',
+                    source: project.videoUrl ? 'url' : (project.imageUrl.startsWith('data:image') ? 'upload' : 'url'),
+                    url: project.videoUrl || project.imageUrl,
+                    progress: 100
+                }];
             }
 
-            document.getElementById('formDesc').value = project.description_id || project.description_en || '';
+            currentFormMedia = JSON.parse(JSON.stringify(list)); // deep clone
+            renderMediaRows();
 
             // Update UI Modal ke mode "Edit"
             document.getElementById('addProjectModalTitle').textContent = "Edit Proyek Portofolio";
@@ -2271,93 +2479,103 @@
 
             const title = document.getElementById('formTitle').value;
             const category = document.getElementById('formCategory').value;
-            const videoUrl = document.getElementById('formVideoUrl').value;
-            const mediaType = document.getElementById('formMediaType').value;
             const description = document.getElementById('formDesc').value;
 
-            // Pilih Cover: Ambil WebP yang dikonversi dari Upload atau ambil link URL biasa
-            let finalImgUrl = '';
-            if (activeCoverTab === 'upload') {
-                if (!processedWebpBase64) {
-                    showToast("Harap pilih dan unggah foto cover terlebih dahulu!");
-                    return;
-                }
-                finalImgUrl = processedWebpBase64;
-            } else {
-                finalImgUrl = document.getElementById('formImgUrl').value;
+            // Validasi minimal 1 media
+            if (currentFormMedia.length === 0) {
+                showToast("Harap tambahkan minimal 1 foto atau video!");
+                return;
             }
 
-            if (editingProjectId !== null) {
-                // MODE UPDATE KONTEN YANG SUDAH TERUPLOAD
-                const updatedProject = {
-                    title_id: title,
-                    title_en: title,
-                    category_id: category,
-                    category_en: category,
-                    description_id: description,
-                    description_en: description,
-                    imageUrl: finalImgUrl,
-                    videoUrl,
-                    mediaType,
-                };
+            // Validasi semua link/file terunggah sempurna
+            for (let i = 0; i < currentFormMedia.length; i++) {
+                if (!currentFormMedia[i].url) {
+                    showToast(`Media #${i + 1} belum terisi atau proses upload belum selesai!`);
+                    return;
+                }
+            }
 
+            // Kompatibilitas mundur: set cover utama dan media type pertama
+            const firstMedia = currentFormMedia[0];
+            const coverImg = firstMedia.type === 'image' ? firstMedia.url : 'https://placehold.co/800x450/1d1d1f/ffffff?text=Video+Karya';
+            const firstVideo = firstMedia.type !== 'image' ? firstMedia.url : '';
+            const firstType = firstMedia.type;
+
+            const projectData = {
+                title_id: title,
+                title_en: title,
+                category_id: category,
+                category_en: category,
+                description_id: description,
+                description_en: description,
+                imageUrl: coverImg,
+                videoUrl: firstVideo,
+                mediaType: firstType,
+                mediaList: currentFormMedia.map(m => ({
+                    type: m.type,
+                    source: m.source || 'url',
+                    url: m.url
+                }))
+            };
+
+            const submitBtn = document.getElementById('btnSubmitProject');
+            submitBtn.disabled = true;
+
+            if (editingProjectId !== null) {
                 if (isFirebaseActive) {
-                    db.collection("projects").doc(editingProjectId).update(updatedProject)
+                    db.collection("projects").doc(String(editingProjectId)).update(projectData)
                         .then(() => {
                             showToast("Proyek berhasil diperbarui!");
+                            closeAddProjectModal();
+                            submitBtn.disabled = false;
                         })
                         .catch((error) => {
                             console.error("Gagal memperbarui proyek:", error);
-                            showToast("Gagal memperbarui proyek ke database online.");
+                            showToast("Gagal memperbarui proyek ke database.");
+                            submitBtn.disabled = false;
                         });
                 } else {
                     const idx = MY_PROJECTS.findIndex(p => String(p.id) === String(editingProjectId));
                     if (idx !== -1) {
-                        MY_PROJECTS[idx] = { ...MY_PROJECTS[idx], ...updatedProject };
+                        MY_PROJECTS[idx] = { ...MY_PROJECTS[idx], ...projectData };
                         saveProjectsToStorage();
                         renderProjects();
                         showToast("Proyek berhasil diperbarui!");
+                        closeAddProjectModal();
+                        submitBtn.disabled = false;
                     }
                 }
             } else {
-                // MODE PEMBUATAN BARU
-                const newProject = {
-                    title_id: title,
-                    title_en: title,
-                    category_id: category,
-                    category_en: category,
-                    description_id: description,
-                    description_en: description,
-                    imageUrl: finalImgUrl,
-                    videoUrl,
-                    mediaType,
-                    isFeatured: false,
-                    views: 0,
-                    createdAt: Date.now()
-                };
+                // Mode Tambah Baru
+                projectData.isFeatured = false;
+                projectData.views = 0;
+                projectData.createdAt = Date.now();
 
                 if (isFirebaseActive) {
                     const docId = Date.now().toString();
-                    db.collection("projects").doc(docId).set(newProject)
+                    db.collection("projects").doc(docId).set(projectData)
                         .then(() => {
-                            console.log("Proyek berhasil disimpan ke Firestore.");
                             showToast("Proyek baru berhasil diterbitkan!");
+                            closeAddProjectModal();
+                            submitBtn.disabled = false;
                         })
                         .catch((error) => {
-                            console.error("Gagal menyimpan ke Firestore:", error);
-                            showToast("Gagal menyimpan proyek ke database online.");
+                            console.error("Gagal menyimpan proyek:", error);
+                            showToast("Gagal menerbitkan proyek baru.");
+                            submitBtn.disabled = false;
                         });
                 } else {
-                    newProject.id = Date.now();
-                    MY_PROJECTS.unshift(newProject);
+                    projectData.id = Date.now();
+                    MY_PROJECTS.unshift(projectData);
                     saveProjectsToStorage();
                     renderProjects();
                     showToast("Proyek baru berhasil diterbitkan!");
+                    closeAddProjectModal();
+                    submitBtn.disabled = false;
                 }
             }
 
             document.getElementById('addProjectForm').reset();
-            closeAddProjectModal();
             document.getElementById('work').scrollIntoView();
         }
     </script>
@@ -2564,12 +2782,7 @@
             mobileMenuOverlay.classList.remove('opacity-100');
         }
 
-        /************************************************************************
-         * 💬 MOBILE ONCHANGE DEFAULT ATTACHMENT
-         ************************************************************************/
-        document.addEventListener('DOMContentLoaded', () => {
-            handleMediaTypeChange();
-        });
+
 
         /************************************************************************
          * 💬 IO-STYLE FLOATING TOAST SYSTEM
