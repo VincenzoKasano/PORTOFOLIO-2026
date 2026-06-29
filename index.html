@@ -44,6 +44,11 @@
         }
     </script>
     <style>
+        html, body {
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
         /* Transisi halus saat berganti tema siang/malam */
         *,
         *::before,
@@ -232,7 +237,7 @@
     </div>
 
     <!-- CONTAINER INDUK UNTUK LAYOUT MODULAR -->
-    <main id="mainContainer" class="relative z-10 flex flex-col">
+    <main id="mainContainer" class="relative z-10 flex flex-col overflow-x-hidden w-full">
 
         <!-- SEKSI 1: HERO SECTION -->
         <section id="hero"
@@ -583,7 +588,7 @@
 
     <!-- FOOTER -->
     <footer
-        class="py-12 border-t border-black/[0.05] dark:border-white/[0.05] bg-black/[0.01] dark:bg-white/[0.01] relative z-10">
+        class="py-12 border-t border-black/[0.05] dark:border-white/[0.05] bg-black/[0.01] dark:bg-white/[0.01] relative z-10 overflow-x-hidden w-full">
         <div
             class="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6 text-xs text-black/50 dark:text-zinc-500">
             <p>© 2026 VINZPRO / Vinz Production. All rights reserved.</p>
