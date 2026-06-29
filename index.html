@@ -1,0 +1,2329 @@
+<!DOCTYPE html>
+<html lang="id" class="dark scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VINZPRO</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font untuk tipografi khas Apple -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Firebase SDK (Compat Version untuk Single HTML) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+                    },
+                    animation: {
+                        'fade-in-up': 'fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'float-slow': 'floatSlow 12s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        floatSlow: {
+                            '0%, 100%': { transform: 'translate(0px, 0px) rotate(0deg)' },
+                            '50%': { transform: 'translate(20px, -30px) rotate(8deg)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Transisi halus saat berganti tema siang/malam */
+        *,
+        *::before,
+        *::after {
+            transition: background-color 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+                color 0.4s ease,
+                transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.4s ease;
+        }
+
+        /* Scrollbar Premium */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.02);
+            border-radius: 99px;
+        }
+
+        .dark ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.01);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 99px;
+        }
+
+        .dark ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .dark ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Outline saat mengedit teks di Mode Admin */
+        [contenteditable="true"] {
+            outline: 2px dashed #3b82f6 !important;
+            outline-offset: 4px;
+            border-radius: 4px;
+            cursor: text;
+        }
+
+        [contenteditable="true"]:focus {
+            outline: 2px solid #10b981 !important;
+            background-color: rgba(16, 185, 129, 0.05);
+        }
+
+        /* Hambuger Menu Bars Animation */
+        .hamburger-line {
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+        }
+
+        .menu-open .line-1 {
+            transform: translateY(6px) rotate(45deg);
+        }
+
+        .menu-open .line-2 {
+            opacity: 0;
+            transform: translateX(-10px);
+        }
+
+        .menu-open .line-3 {
+            transform: translateY(-6px) rotate(-45deg);
+        }
+    </style>
+</head>
+
+<body
+    class="bg-[#f5f5f7] dark:bg-[#000000] text-[#1d1d1f] dark:text-[#f5f5f7] min-h-screen font-sans antialiased overflow-x-hidden relative">
+
+    <!-- 🌌 KOSMOS ANTI-GRAVITASI INTERAKTIF (HTML5 Canvas Background) -->
+    <canvas id="cosmosCanvas" class="fixed inset-0 pointer-events-none z-0"></canvas>
+
+    <!-- HEADER: GLASSMORPHISM PREMIUM -->
+    <header
+        class="fixed top-0 left-0 w-full z-50 border-b border-black/[0.04] dark:border-white/[0.04] bg-[#f5f5f7]/60 dark:bg-[#000000]/60 backdrop-blur-2xl">
+        <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+            <a href="#"
+                class="text-lg md:text-xl font-bold tracking-tight hover:opacity-80 transition-opacity flex items-center gap-2">
+                VINZPRO
+            </a>
+
+            <!-- Navigasi Tengah (Desktop Only) -->
+            <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-black/60 dark:text-white/60">
+                <a href="#hero" data-localize="nav_home"
+                    class="hover:text-black dark:hover:text-white transition-colors">Utama</a>
+                <a href="#work" data-localize="nav_work"
+                    class="hover:text-black dark:hover:text-white transition-colors">Portofolio</a>
+                <a href="#about" data-localize="nav_about"
+                    class="hover:text-black dark:hover:text-white transition-colors">Profil</a>
+                <a href="#contact" data-localize="nav_contact"
+                    class="hover:text-black dark:hover:text-white transition-colors">Kontak</a>
+            </nav>
+
+            <!-- Aksi Tombol -->
+            <div class="flex items-center gap-3">
+                <!-- Tombol Daylight & Night Mode -->
+                <button id="themeToggle"
+                    class="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 active:scale-90 transition-all flex items-center justify-center group"
+                    title="Ganti Mode Daylight/Night">
+                    <svg id="sunIcon"
+                        class="w-5 h-5 text-yellow-500 hidden dark:block transform group-hover:rotate-90 transition-transform duration-500"
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z">
+                        </path>
+                    </svg>
+                    <svg id="moonIcon"
+                        class="w-5 h-5 text-indigo-600 block dark:hidden transform group-hover:-rotate-12 transition-transform duration-500"
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z">
+                        </path>
+                    </svg>
+                </button>
+
+                <!-- Tombol Ganti Bahasa (Bilingual) -->
+                <button id="langToggle"
+                    class="flex items-center justify-center px-2.5 py-1 text-xs font-semibold rounded-md bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 hover:bg-black/10 dark:hover:bg-white/10 active:scale-95 transition-all"
+                    title="Ubah Bahasa">
+                    EN
+                </button>
+
+                <!-- Tombol Login Admin -->
+                <button id="adminToggle"
+                    class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/5 active:scale-95 transition-all text-xs font-medium"
+                    aria-label="Portal Admin">
+                    <span id="lockStatus" class="flex items-center gap-1 text-black/60 dark:text-white/60">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                            </path>
+                        </svg>
+                        <span data-localize="btn_admin">Admin</span>
+                    </span>
+                    <span id="unlockStatus"
+                        class="hidden flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+                        Admin Aktif
+                    </span>
+                </button>
+
+                <!-- Tombol Mobile Hamburger Menu (Mobile Only) -->
+                <button id="mobileMenuBtn"
+                    class="flex md:hidden flex-col justify-center items-center w-9 h-9 rounded-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 active:scale-90 transition-all gap-[4px] relative z-50"
+                    title="Navigasi Menu">
+                    <span class="w-4 h-[2px] bg-black dark:bg-white rounded-full hamburger-line line-1"></span>
+                    <span class="w-4 h-[2px] bg-black dark:bg-white rounded-full hamburger-line line-2"></span>
+                    <span class="w-4 h-[2px] bg-black dark:bg-white rounded-full hamburger-line line-3"></span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MOBILE MENU OVERLAY NAVIGATION (Apple-Style Dropdown) -->
+    <div id="mobileMenuOverlay"
+        class="fixed inset-0 z-40 bg-[#f5f5f7]/95 dark:bg-[#000000]/95 backdrop-blur-2xl flex flex-col justify-center items-center gap-8 text-2xl font-semibold tracking-tight transition-all duration-500 ease-in-out opacity-0 translate-y-[-100%] pointer-events-none">
+        <a href="#hero" onclick="closeMobileMenu()" data-localize="nav_home"
+            class="hover:text-blue-500 dark:hover:text-blue-400 transition-colors py-2 border-b border-black/5 dark:border-white/5 w-4/5 text-center">Utama</a>
+        <a href="#work" onclick="closeMobileMenu()" data-localize="nav_work"
+            class="hover:text-blue-500 dark:hover:text-blue-400 transition-colors py-2 border-b border-black/5 dark:border-white/5 w-4/5 text-center">Portofolio</a>
+        <a href="#about" onclick="closeMobileMenu()" data-localize="nav_about"
+            class="hover:text-blue-500 dark:hover:text-blue-400 transition-colors py-2 border-b border-black/5 dark:border-white/5 w-4/5 text-center">Profil</a>
+        <a href="#contact" onclick="closeMobileMenu()" data-localize="nav_contact"
+            class="hover:text-blue-500 dark:hover:text-blue-400 transition-colors py-2 w-4/5 text-center">Kontak</a>
+
+        <!-- Admin Entry on Mobile -->
+        <button id="mobileAdminToggle"
+            class="sm:hidden mt-6 flex items-center gap-1.5 px-6 py-2.5 rounded-full border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 text-sm font-medium active:scale-95 transition-all">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                </path>
+            </svg>
+            <span data-localize="btn_admin">Admin</span>
+        </button>
+    </div>
+
+    <!-- CONTAINER INDUK UNTUK LAYOUT MODULAR -->
+    <main id="mainContainer" class="relative z-10 flex flex-col">
+
+        <!-- SEKSI 1: HERO SECTION -->
+        <section id="hero"
+            class="min-h-screen pt-32 pb-20 flex flex-col justify-center items-center px-6 text-center relative">
+            <div
+                class="absolute w-[350px] h-[350px] rounded-full bg-blue-500/5 dark:bg-blue-500/10 blur-[130px] top-1/4 -left-32 animate-float-slow">
+            </div>
+            <div class="absolute w-[450px] h-[450px] rounded-full bg-indigo-500/5 dark:bg-purple-500/10 blur-[150px] bottom-1/4 -right-40 animate-float-slow"
+                style="animation-delay: -5s;"></div>
+
+            <div class="max-w-4xl mx-auto space-y-8 animate-fade-in-up relative z-20">
+                <span
+                    class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 shadow-sm">
+                    <span
+                        class="w-2 h-2 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 animate-pulse"></span>
+                    <span data-localize="badge_hero">Tersedia untuk Kolaborasi Visual</span>
+                </span>
+
+                <h1 id="editableHeroGreeting"
+                    class="text-4xl md:text-7xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-b from-[#1d1d1f] via-zinc-700 to-zinc-500 dark:from-white dark:via-zinc-300 dark:to-zinc-600 leading-[1.1] select-none"
+                    data-localize="hero_greeting">
+                    Hi, I'm Marvin!
+                </h1>
+
+                <div class="max-w-2xl mx-auto space-y-4">
+                    <p id="editableHeroDesc"
+                        class="text-base md:text-xl text-black/60 dark:text-zinc-400 font-light leading-relaxed text-justify md:text-center"
+                        data-localize="hero_intro_description">
+                        Seorang <strong>Videographer, Editor, dan Photographer</strong> berpengalaman lebih dari 5 tahun
+                        dalam pembuatan aset visual multimedia papan atas. Saat ini dipercaya memegang peran kreatif di
+                        <strong>(Dr.m) PT. Digital Rantai Maya</strong>, menukangi visual artis-artis paling terkemuka
+                        di blantika hiburan Indonesia.
+                    </p>
+                    <p id="editableHeroMeta" class="text-xs md:text-sm font-mono text-zinc-500 dark:text-zinc-500"
+                        data-localize="hero_meta">
+                        Semarang & Jakarta, Indonesia • marvinaldian30@gmail.com • +62 851-7508-5590
+                    </p>
+                </div>
+
+                <!-- Pesan Admin Aktif -->
+                <div class="flex flex-col sm:flex-row gap-4 justify-center items-center pt-2">
+                    <div id="adminGreeting" class="hidden w-full text-center mb-2 animate-pulse">
+                        <span
+                            class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shadow-sm"
+                            data-localize="admin_mode_notice">
+                            🔒 Mode Admin Aktif — Anda memiliki akses penuh untuk menambah, merubah, & mengatur susunan
+                            halaman.
+                        </span>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
+                    <a href="#work"
+                        class="w-full sm:w-auto bg-gradient-to-r from-[#0071e3] to-[#005bb5] hover:from-[#0077ed] hover:to-[#0066cc] text-white font-medium py-3 px-7 rounded-full transition-all flex items-center justify-center gap-2 group shadow-lg shadow-blue-500/20 hover:scale-[1.02] active:scale-95">
+                        <span data-localize="btn_explore">Eksplor Portofolio</span>
+                        <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </a>
+                    <a href="#about"
+                        class="w-full sm:w-auto border border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/5 font-medium py-3 px-7 rounded-full transition-all"
+                        data-localize="btn_cv">
+                        Detail Riwayat Hidup (CV)
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEKSI 3: GALERI KARYA / PORTOFOLIO -->
+        <section id="work"
+            class="py-24 max-w-6xl mx-auto px-6 border-t border-black/[0.04] dark:border-white/[0.04] w-full">
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+                <div>
+                    <span class="text-sm font-semibold text-blue-500 uppercase tracking-widest"
+                        data-localize="work_subtitle">Galeri Kreatif Pilihan</span>
+                    <h2 class="text-3xl md:text-5xl font-bold tracking-tight mt-2" data-localize="work_title">Karya
+                        Multimedia</h2>
+                </div>
+                <!-- Kontrol Admin -->
+                <div id="adminControls" class="hidden flex flex-wrap gap-3">
+                    <button onclick="openAddProjectModal()"
+                        class="flex items-center gap-2 text-xs bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 py-2.5 px-4 rounded-full hover:bg-emerald-500/20 transition-all font-medium active:scale-95">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4">
+                            </path>
+                        </svg>
+                        <span data-localize="btn_add_work">Tambah Karya Baru (Live UI)</span>
+                    </button>
+                    <button onclick="openLayoutManagerModal()"
+                        class="flex items-center gap-2 text-xs bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 py-2.5 px-4 rounded-full hover:bg-purple-500/20 transition-all font-medium active:scale-95">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                        <span>Atur Layout Seksi</span>
+                    </button>
+                    <button onclick="logoutAdmin()"
+                        class="flex items-center gap-2 text-xs bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 py-2.5 px-4 rounded-full hover:bg-rose-500/20 transition-all font-medium active:scale-95">
+                        <span data-localize="btn_logout_admin">Keluar Admin</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Grid Karya Dinamis -->
+            <div id="projectsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Project Cards dimuat dari JS Array -->
+            </div>
+        </section>
+
+        <!-- SEKSI 4: RIWAYAT PENGALAMAN KERJA (TIMELINE PRESET) -->
+        <section id="about"
+            class="py-24 max-w-6xl mx-auto px-6 border-t border-black/[0.04] dark:border-white/[0.04] w-full">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <span class="text-sm font-semibold text-blue-500 uppercase tracking-widest"
+                    data-localize="exp_subtitle">Jalan Karir Profesional</span>
+                <h2 class="text-3xl md:text-5xl font-bold tracking-tight mt-2" data-localize="exp_title">Pengalaman
+                    Kerja</h2>
+            </div>
+
+            <div class="space-y-12 max-w-4xl mx-auto">
+                <!-- Pengalaman 1: Dr.m -->
+                <div class="relative pl-8 border-l border-blue-500 dark:border-blue-400">
+                    <div
+                        class="absolute -left-1.5 top-1.5 w-3.5 h-3.5 rounded-full bg-blue-500 dark:bg-blue-400 shadow-md">
+                    </div>
+                    <div
+                        class="bg-white/40 dark:bg-white/[0.01] border border-black/[0.05] dark:border-white/[0.03] p-6 md:p-8 rounded-2xl backdrop-blur-xl">
+                        <span
+                            class="inline-block px-3 py-1 mb-3 text-xs font-semibold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 rounded-full"
+                            data-localize="exp1_badge">Pekerjaan Utama Saat Ini</span>
+                        <h3 class="text-xl md:text-2xl font-bold tracking-tight text-[#1d1d1f] dark:text-[#f5f5f7]">
+                            Production Specialist / Creator</h3>
+                        <h4 class="text-sm font-medium text-blue-500 mt-1">(Dr.m) PT. Digital Rantai Maya</h4>
+                        <p class="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">2025 - Present</p>
+                        <p class="text-sm md:text-base text-black/60 dark:text-zinc-400 font-light mt-4 text-justify"
+                            data-localize="exp1_desc">
+                            Dipercaya mengomandoi manajemen aset produksi multimedia, videografi, dan post-production
+                            untuk jajaran talenta/artis papan atas Indonesia di bawah naungan manajemen artis terkemuka
+                            (Dr.m), mencapai audiens nasional dan internasional skala masif.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Pengalaman 2: Ronyrom Production -->
+                <div class="relative pl-8 border-l border-zinc-200 dark:border-zinc-800">
+                    <div class="absolute -left-1.5 top-1.5 w-3.5 h-3.5 rounded-full bg-zinc-300 dark:bg-zinc-800"></div>
+                    <div
+                        class="bg-white/40 dark:bg-white/[0.01] border border-black/[0.05] dark:border-white/[0.03] p-6 md:p-8 rounded-2xl backdrop-blur-xl">
+                        <h3 class="text-xl md:text-2xl font-bold tracking-tight text-[#1d1d1f] dark:text-[#f5f5f7]">
+                            Production Specialist</h3>
+                        <h4 class="text-sm font-medium text-blue-500 mt-1">Ronyrom Production, Jakarta</h4>
+                        <p class="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">Jan 2022 – Jul 2022, Aug 2024 – Dec
+                            2024</p>
+                        <ul class="text-sm md:text-base text-black/60 dark:text-zinc-400 font-light mt-4 list-disc list-inside space-y-2 text-justify"
+                            data-localize="exp2_desc_list">
+                            <li>Memimpin arah kreatif untuk 15+ produksi video musik populer (Sandrina Azzahra, Bebizy,
+                                Dudung Abdurachman, Kuki Nabila, Mage, Hyra, Drive, dll).</li>
+                            <li>Meningkatkan efisiensi produksi sebesar 30% melalui optimalisasi alur kerja digital.
+                            </li>
+                            <li>Mengatur tim kreatif beranggotakan 8-12 staf fotografer, videografer, dan tim editor.
+                            </li>
+                            <li>Meningkatkan jangkauan media sosial klien sebesar 250% melalui pembuatan kampanye video
+                                terstruktur.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Pengalaman 3: Arsalynk -->
+                <div class="relative pl-8 border-l border-zinc-200 dark:border-zinc-800">
+                    <div class="absolute -left-1.5 top-1.5 w-3.5 h-3.5 rounded-full bg-zinc-300 dark:bg-zinc-800"></div>
+                    <div
+                        class="bg-white/40 dark:bg-white/[0.01] border border-black/[0.05] dark:border-white/[0.03] p-6 md:p-8 rounded-2xl backdrop-blur-xl">
+                        <h3 class="text-xl md:text-2xl font-bold tracking-tight text-[#1d1d1f] dark:text-[#f5f5f7]">
+                            Creative Specialist & Public Sector Consultant</h3>
+                        <h4 class="text-sm font-medium text-blue-500 mt-1">Arsalynk, Semarang</h4>
+                        <p class="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">Jan 2025 – Sept 2025</p>
+                        <ul class="text-sm md:text-base text-black/60 dark:text-zinc-400 font-light mt-4 list-disc list-inside space-y-2 text-justify"
+                            data-localize="exp3_desc_list">
+                            <li>Menjadi pimpinan produksi multimedia resmi untuk acara pemerintahan profil tinggi
+                                (Semarang Youth Plan, Duta Genre 2023-2025, Duta Wisata Jawa Tengah 2025).</li>
+                            <li>Diberi mandat memproduksi kampanye visual berkualitas tinggi untuk anggota DPR Kota
+                                Semarang, DPRD Provinsi Jateng, dan petinggi BAPPEDA.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Pengalaman 4: Vinz Production -->
+                <div class="relative pl-8 border-l border-zinc-200 dark:border-zinc-800">
+                    <div class="absolute -left-1.5 top-1.5 w-3.5 h-3.5 rounded-full bg-zinc-300 dark:bg-zinc-800"></div>
+                    <div
+                        class="bg-white/40 dark:bg-white/[0.01] border border-black/[0.05] dark:border-white/[0.03] p-6 md:p-8 rounded-2xl backdrop-blur-xl">
+                        <h3 class="text-xl md:text-2xl font-bold tracking-tight text-[#1d1d1f] dark:text-[#f5f5f7]">
+                            Founder & Creative Director</h3>
+                        <h4 class="text-sm font-medium text-blue-500 mt-1">Vinz Production</h4>
+                        <p class="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">2019 - Present</p>
+                        <ul class="text-sm md:text-base text-black/60 dark:text-zinc-400 font-light mt-4 list-disc list-inside space-y-2 text-justify"
+                            data-localize="exp4_desc_list">
+                            <li>Mendirikan dan mengembangkan Vinz Production dari proyek lepas mandiri hingga menjadi
+                                partner kreatif tepercaya dengan lebih dari 50+ klien korporasi besar.</li>
+                            <li>Dipilih oleh korporasi multinasional PT ExxonMobil Lubricants Indonesia untuk menggarap
+                                aset promosi foto dan video resmi.</li>
+                            <li>Membuat iklan komersial berkualitas siaran nasional yang berhasil lolos sensor untuk
+                                diputar langsung di bioskop-bioskop lokal.</li>
+                            <li>Dipercaya oleh BUMN PT Kereta Api Indonesia (Persero) - Daop 4 Semarang untuk menggarap
+                                pemotretan studio jajaran pimpinan tinggi management.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEKSI 5: BENTO GRID PRESTASI DAN KEAHLIAN TEKNIS -->
+        <section id="skills"
+            class="py-24 max-w-6xl mx-auto px-6 border-t border-black/[0.04] dark:border-white/[0.04] w-full">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <span class="text-sm font-semibold text-blue-500 uppercase tracking-widest"
+                    data-localize="skills_subtitle">Sertifikasi & Pencapaian Unggul</span>
+                <h2 class="text-3xl md:text-5xl font-bold tracking-tight mt-2" data-localize="skills_title">Keahlian &
+                    Prestasi</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Box 1: Keahlian Teknis (Produksi & Desain) -->
+                <div
+                    class="md:col-span-2 bg-white/40 dark:bg-white/[0.01] border border-black/[0.05] dark:border-white/[0.03] p-8 rounded-3xl backdrop-blur-xl flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-2xl font-bold tracking-tight mb-4 text-[#1d1d1f] dark:text-[#f5f5f7]"
+                            data-localize="bento_skills_title">Alat Tempur & Spesialisasi</h3>
+                        <p class="text-sm text-black/60 dark:text-zinc-400 font-light mb-6"
+                            data-localize="bento_skills_desc">Software industri standar profesional yang Marvin gunakan
+                            dalam melahirkan karya seni visual berskala masif:</p>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <div>
+                            <span class="block text-xs font-semibold text-blue-500 uppercase tracking-wider mb-2"
+                                data-localize="skill_hdr_prod">Production</span>
+                            <p class="text-sm font-medium opacity-80">Blender, After Effects, Premiere Pro, DaVinci
+                                Resolve, CapCut</p>
+                        </div>
+                        <div>
+                            <span class="block text-xs font-semibold text-blue-500 uppercase tracking-wider mb-2"
+                                data-localize="skill_hdr_design">Design & UI</span>
+                            <p class="text-sm font-medium opacity-80">Photoshop, Illustrator, Figma, Clip Studio Paint,
+                                Canva</p>
+                        </div>
+                        <div>
+                            <span class="block text-xs font-semibold text-blue-500 uppercase tracking-wider mb-2"
+                                data-localize="skill_hdr_dev">Dev & Engine</span>
+                            <p class="text-sm font-medium opacity-80">HTML/CSS, JavaScript, Unity (Basic), Unreal Engine
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Box 2: Highlight Unreal Engine (Bento Mini) -->
+                <div
+                    class="bg-gradient-to-br from-indigo-900 to-slate-950 border border-indigo-500/20 p-8 rounded-3xl text-white flex flex-col justify-between shadow-lg">
+                    <div>
+                        <span class="text-xs font-bold tracking-widest text-indigo-400 uppercase">Unreal Engine
+                            Pioneer</span>
+                        <h3 class="text-2xl font-bold tracking-tight mt-2 mb-4">Unreal Engine 5</h3>
+                    </div>
+                    <p class="text-sm text-indigo-200/70 font-light leading-relaxed text-justify"
+                        data-localize="unreal_milestone">
+                        Menjadi mahasiswa pertama di sejarah Politeknik Negeri Semarang yang sukses memanfaatkan
+                        **Unreal Engine** dalam penyusunan tugas akhir tesis (Game Interaktif 3D) pada tahun 2025.
+                    </p>
+                </div>
+
+                <!-- Box 3: Penghargaan Bergengsi BKKBN & AKUKAMU -->
+                <div
+                    class="bg-white/40 dark:bg-white/[0.01] border border-black/[0.05] dark:border-white/[0.03] p-8 rounded-3xl backdrop-blur-xl">
+                    <span class="text-xs font-semibold text-blue-500 uppercase tracking-wider">Social Impact
+                        Campaign</span>
+                    <h3 class="text-xl font-bold mt-2 mb-4" data-localize="award_social_title">Kampanye Kreatif
+                        Kesehatan</h3>
+                    <ul class="space-y-3 text-sm text-black/60 dark:text-zinc-400 font-light list-disc list-inside">
+                        <li data-localize="award_bkkbn_1"><strong>Juara 1</strong> - Konten Video Edukasi Kesehatan
+                            Reproduksi Remaja BKKBN Provinsi Jawa Tengah 2025.</li>
+                        <li data-localize="award_bkkbn_2"><strong>Juara Favorit Nasional</strong> - Kompetisi Konten
+                            Edukasi Kesehatan Reproduksi Remaja AKUKAMU Tingkat Nasional 2025.</li>
+                    </ul>
+                </div>
+
+                <!-- Box 4: KMIPN Awards & Akademik -->
+                <div
+                    class="bg-white/40 dark:bg-white/[0.01] border border-black/[0.05] dark:border-white/[0.03] p-8 rounded-3xl backdrop-blur-xl">
+                    <span class="text-xs font-semibold text-blue-500 uppercase tracking-wider">Academic & Technology
+                        Excellence</span>
+                    <h3 class="text-xl font-bold mt-2 mb-4" data-localize="award_acad_title">KMIPN & IoT Global</h3>
+                    <ul class="space-y-3 text-sm text-black/60 dark:text-zinc-400 font-light list-disc list-inside">
+                        <li data-localize="award_acad_1"><strong>Finalis Animasi</strong> - KMIPN VI 2024.</li>
+                        <li data-localize="award_acad_2"><strong>Best Presentation Award</strong> - Animasi KMIPN V
+                            2023.</li>
+                        <li data-localize="award_acad_3"><strong>Gold Medal IoT & Special Award</strong> - Indonesia
+                            International IoT Olympiad (I3O) 2024.</li>
+                    </ul>
+                </div>
+
+                <!-- Box 5: Kepemimpinan & Influencer -->
+                <div
+                    class="bg-white/40 dark:bg-white/[0.01] border border-black/[0.05] dark:border-white/[0.03] p-8 rounded-3xl backdrop-blur-xl">
+                    <span class="text-xs font-semibold text-blue-500 uppercase tracking-wider">Influence &
+                        Leadership</span>
+                    <h3 class="text-xl font-bold mt-2 mb-4" data-localize="award_leader_title">Pesona & Manajemen Event
+                    </h3>
+                    <ul class="space-y-3 text-sm text-black/60 dark:text-zinc-400 font-light list-disc list-inside">
+                        <li data-localize="award_leader_1"><strong>Juara Utama</strong> - Duta Influencer Putra Kota
+                            Semarang 2022.</li>
+                        <li data-localize="award_leader_2"><strong>Top 10 Nasional</strong> - PORSENI XIV Solo Song Pop
+                            Competition 2024.</li>
+                        <li data-localize="award_leader_3"><strong>Event Coordinator</strong> - Menyukseskan Electro
+                            Charity Concert 2024 (500+ Penonton).</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEKSI 6: KONTAK -->
+        <section id="contact"
+            class="py-24 max-w-4xl mx-auto px-6 border-t border-black/[0.05] dark:border-white/[0.05] text-center w-full">
+            <span class="text-sm font-semibold text-blue-500 uppercase tracking-widest block mb-2"
+                data-localize="contact_subtitle">Mari Berkolaborasi</span>
+            <h2 class="text-3xl md:text-5xl font-bold tracking-tight mb-6" data-localize="contact_title">Mulai Hubungkan
+                Ide Hebatmu</h2>
+            <p class="text-lg text-black/60 dark:text-zinc-400 font-light max-w-xl mx-auto mb-10 leading-relaxed"
+                data-localize="contact_desc">
+                Punya produk, video sinematik, atau project kreatif yang mau diwujudkan? Ruang obrolan Vinz Production
+                selalu terbuka lebar.
+            </p>
+            <a href="mailto:marvinaldian30@gmail.com"
+                class="inline-flex items-center gap-3 bg-black dark:bg-white text-white dark:text-black font-semibold py-4 px-10 rounded-full hover:scale-[1.03] active:scale-95 transition-all shadow-xl">
+                <span data-localize="btn_contact_email">Kirim Email Sekarang</span>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
+                    </path>
+                </svg>
+            </a>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer
+        class="py-12 border-t border-black/[0.05] dark:border-white/[0.05] bg-black/[0.01] dark:bg-white/[0.01] relative z-10">
+        <div
+            class="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6 text-xs text-black/50 dark:text-zinc-500">
+            <p>© 2026 VINZPRO / Vinz Production. All rights reserved.</p>
+            <div class="flex gap-6">
+                <a href="#" class="hover:underline">Syarat Layanan</a>
+                <a href="#" class="hover:underline">Kebijakan Privasi</a>
+                <a href="#" class="hover:underline">Hubungi Kami</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- PORTAL LOGIN PREMIUM ALA APPLE ID -->
+    <div id="adminLoginModal"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden transition-opacity duration-300 opacity-0">
+        <div
+            class="relative w-full max-w-sm bg-white/95 dark:bg-[#121212]/95 border border-black/10 dark:border-white/10 p-8 rounded-3xl overflow-hidden shadow-2xl flex flex-col items-center">
+
+            <button onclick="closeAdminLoginModal()"
+                class="absolute top-4 right-4 text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white transition-colors"
+                aria-label="Batal">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                    </path>
+                </svg>
+            </button>
+
+            <div
+                class="w-14 h-14 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400 mb-4 shadow-inner">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                    </path>
+                </svg>
+            </div>
+
+            <h3 class="text-xl font-bold tracking-tight mb-1" data-localize="login_title">Vinz Creator Login</h3>
+            <p class="text-xs text-black/50 dark:text-zinc-500 mb-6 text-center" data-localize="login_subtitle">Masuk
+                untuk mengelola postingan galeri Vinz Production.</p>
+
+            <form id="loginForm" onsubmit="handleAdminLogin(event)" class="w-full space-y-4">
+                <div>
+                    <label class="block text-left text-xs font-semibold text-black/60 dark:text-zinc-400 mb-1.5 pl-1"
+                        data-localize="login_email_lbl">Email Kreator</label>
+                    <input type="email" id="loginEmail" required placeholder="admin@vinzproduction.com"
+                        class="w-full px-3.5 py-2.5 text-sm bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                </div>
+                <div>
+                    <label class="block text-left text-xs font-semibold text-black/60 dark:text-zinc-400 mb-1.5 pl-1"
+                        data-localize="login_pass_lbl">Password</label>
+                    <input type="password" id="loginPassword" required placeholder="••••••••"
+                        class="w-full px-3.5 py-2.5 text-sm bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                </div>
+
+                <div
+                    class="bg-blue-500/5 border border-blue-500/10 rounded-xl p-3 text-left text-[11px] text-blue-600 dark:text-blue-400 space-y-0.5">
+                    <span class="font-bold block mb-0.5">💡 Akun Akses Demo:</span>
+                    <p>Email: <span class="font-mono font-semibold select-all">admin@vinzproduction.com</span></p>
+                    <p>Password: <span class="font-mono font-semibold select-all">admin123</span></p>
+                </div>
+
+                <p id="loginErrorMessage"
+                    class="text-xs text-rose-500 font-semibold h-4 text-center transition-all opacity-0"></p>
+
+                <button type="submit"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition-all active:scale-95 text-sm shadow-md"
+                    data-localize="login_btn_submit">
+                    Verifikasi Keamanan
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Viewer Detail & Pemutar Media Sosial Modal (Glassmorphic & Responsive) -->
+    <div id="mediaModal"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md hidden transition-opacity duration-300 opacity-0">
+        <div
+            class="relative w-full max-w-4xl bg-white/95 dark:bg-[#121212]/95 border border-black/10 dark:border-white/10 rounded-3xl overflow-hidden shadow-2xl max-h-[90vh] flex flex-col">
+            <button onclick="closeMediaModal()"
+                class="absolute top-4 right-4 z-10 bg-black/10 dark:bg-white/10 hover:bg-black/20 dark:hover:bg-white/20 text-black dark:text-white p-2 rounded-full transition-all active:scale-95"
+                aria-label="Tutup">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                    </path>
+                </svg>
+            </button>
+
+            <!-- Area Render Konten (Fleksibel Mengikuti Aspek Rasio Media Sosial) -->
+            <div id="modalPlayerArea"
+                class="w-full bg-black relative flex items-center justify-center overflow-hidden transition-all duration-300 max-h-[50vh] md:max-h-[60vh] aspect-video">
+                <video id="modalVideo" class="w-full h-full object-contain hidden" controls autoplay muted playsinline
+                    preload="none"></video>
+                <img id="modalImg" class="w-full h-full object-cover hidden" src="" alt="Detail karya">
+                <div id="modalIframeContainer"
+                    class="w-full h-full hidden flex items-center justify-center bg-zinc-950">
+                    <!-- Iframe Dinamis Media Sosial dimuat di sini -->
+                </div>
+            </div>
+
+            <div class="p-6 md:p-8 overflow-y-auto border-t border-black/[0.05] dark:border-white/[0.05]">
+                <div class="flex items-center gap-2 mb-2">
+                    <span id="modalCategory"
+                        class="text-xs font-semibold text-blue-500 uppercase tracking-widest">Kategori</span>
+                    <span id="modalSourceBadge"
+                        class="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider bg-black/10 dark:bg-white/10">Drive</span>
+                </div>
+                <h3 id="modalTitle" class="text-xl md:text-2xl font-bold tracking-tight mb-3">Judul Proyek</h3>
+                <p id="modalDesc"
+                    class="text-black/70 dark:text-zinc-400 font-light text-sm md:text-base leading-relaxed">Deskripsi
+                    proyek.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel Tambah Proyek Baru (Laci Form dengan Pemilih Source Media Sosial & Konverter WebP) -->
+    <div id="addProjectModal"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden transition-opacity duration-300 opacity-0">
+        <div
+            class="relative w-full max-w-lg bg-[#f5f5f7] dark:bg-[#121212] border border-black/10 dark:border-white/10 p-8 rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh] overflow-y-auto">
+            <button onclick="closeAddProjectModal()"
+                class="absolute top-4 right-4 text-black dark:text-white hover:opacity-70" aria-label="Tutup">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                    </path>
+                </svg>
+            </button>
+
+            <h3 class="text-2xl font-bold tracking-tight mb-1" data-localize="add_proj_title">Tambah Proyek Portofolio
+            </h3>
+            <p class="text-xs text-black/60 dark:text-zinc-400 mb-6" data-localize="add_proj_subtitle">Hasil pengisian
+                ini akan langsung dirender secara real-time di galeri depan Vinz Production.</p>
+
+            <form id="addProjectForm" class="space-y-4 text-sm" onsubmit="handleLiveAddProject(event)">
+                <div>
+                    <label class="block font-medium mb-1.5 opacity-80" data-localize="lbl_proj_title">Judul
+                        Karya</label>
+                    <input type="text" id="formTitle" required placeholder="Contoh: Video Cinematic Intro"
+                        class="w-full p-3 bg-white dark:bg-zinc-900 border border-black/10 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block font-medium mb-1.5 opacity-80"
+                            data-localize="lbl_proj_category">Kategori</label>
+                        <input type="text" id="formCategory" required placeholder="Contoh: Editor, Photographer"
+                            class="w-full p-3 bg-white dark:bg-zinc-900 border border-black/10 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block font-medium mb-1.5 opacity-80">Sumber Media (Platform)</label>
+                        <select id="formMediaType" onchange="handleMediaTypeChange()"
+                            class="w-full p-3 bg-white dark:bg-zinc-900 border border-black/10 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            <option value="image">Gambar / Cover Saja</option>
+                            <option value="video">Direct Video MP4</option>
+                            <option value="youtube">YouTube (Video / Shorts)</option>
+                            <option value="instagram">Instagram (Post / Reels)</option>
+                            <option value="tiktok">TikTok Video</option>
+                            <option value="drive">Google Drive File</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Bagian Cover Image: Tab Selector (Upload File vs Input URL) -->
+                <div>
+                    <label class="block font-medium mb-1.5 opacity-80">Cover Image / Thumbnail</label>
+                    <div
+                        class="flex border border-black/10 dark:border-zinc-800 rounded-lg p-1 bg-black/5 dark:bg-black/30 mb-3">
+                        <button type="button" id="tabUpload" onclick="switchCoverTab('upload')"
+                            class="flex-1 text-center py-1.5 text-xs font-semibold rounded-md bg-white dark:bg-zinc-800 text-blue-500 shadow-sm transition-all">
+                            📷 Upload File (Auto WebP)
+                        </button>
+                        <button type="button" id="tabUrl" onclick="switchCoverTab('url')"
+                            class="flex-1 text-center py-1.5 text-xs font-semibold rounded-md text-zinc-500 dark:text-zinc-400 transition-all">
+                            🔗 Tempel Link URL
+                        </button>
+                    </div>
+
+                    <!-- Input 1: File Uploader dengan Auto-Resize WebP -->
+                    <div id="coverUploadGroup" class="space-y-3">
+                        <div class="flex items-center justify-center w-full">
+                            <label
+                                class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-black/10 dark:border-zinc-800 hover:border-blue-500 dark:hover:border-blue-500 rounded-xl cursor-pointer bg-white dark:bg-zinc-900 transition-all">
+                                <div class="flex flex-col items-center justify-center pt-5 pb-6 text-center px-4">
+                                    <svg class="w-8 h-8 text-zinc-400 mb-2" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
+                                        </path>
+                                    </svg>
+                                    <p class="text-xs text-zinc-500 dark:text-zinc-400"><span
+                                            class="font-bold text-blue-500">Klik untuk upload foto</span> atau drag and
+                                        drop</p>
+                                    <p class="text-[10px] text-zinc-400 mt-1">Sistem otomatis mengompres ke .WebP &
+                                        Potong 16:9</p>
+                                </div>
+                                <input type="file" id="formImgFile" accept="image/*" class="hidden"
+                                    onchange="handleFileWebPConversion(this)">
+                            </label>
+                        </div>
+
+                        <!-- Mini Preview Box -->
+                        <div id="imgFilePreviewContainer"
+                            class="hidden relative rounded-xl overflow-hidden border border-black/10 dark:border-zinc-800 bg-black/10 aspect-video">
+                            <img id="imgFilePreview" src="" class="w-full h-full object-cover">
+                            <button type="button" onclick="clearSelectedFile()"
+                                class="absolute top-2 right-2 p-1.5 bg-black/60 hover:bg-black/85 text-white rounded-full transition-all">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                            <span
+                                class="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-emerald-500 text-[9px] text-white font-bold tracking-wider uppercase shadow">
+                                WebP Optimized 16:9
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Input 2: URL Image Biasa -->
+                    <div id="coverUrlGroup" class="hidden">
+                        <input type="url" id="formImgUrl" placeholder="Contoh: https://images.unsplash.com/..."
+                            class="w-full p-3 bg-white dark:bg-zinc-900 border border-black/10 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label id="formVideoUrlLabel" class="block font-medium mb-1.5 opacity-80">URL Video / Link Social
+                        Media</label>
+                    <input type="text" id="formVideoUrl" placeholder="Contoh: https://www.instagram.com/reel/..."
+                        class="w-full p-3 bg-white dark:bg-zinc-900 border border-black/10 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    <p id="formUrlHint" class="text-[11px] text-zinc-500 dark:text-zinc-500 mt-1 pl-1">Pilih sumber
+                        media untuk petunjuk input.</p>
+                </div>
+
+                <div>
+                    <label class="block font-medium mb-1.5 opacity-80" data-localize="lbl_proj_desc">Deskripsi
+                        Karya</label>
+                    <textarea id="formDesc" required rows="3" placeholder="Tulis cerita menarik di balik karya ini..."
+                        class="w-full p-3 bg-white dark:bg-zinc-900 border border-black/10 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"></textarea>
+                </div>
+
+                <button type="submit" id="btnSubmitProject"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-xl transition-all active:scale-95 shadow-lg shadow-blue-500/20 flex justify-center items-center gap-2">
+                    <span id="submitBtnText" data-localize="btn_proj_submit">Masukkan ke Galeri Sekarang!</span>
+                    <svg id="submitBtnSpinner" class="w-4 h-4 animate-spin hidden" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.5">
+                        <path d="M21 12a9 9 0 0 1-9 9m9-9a9 9 0 0 0-9-9m9 9H3"></path>
+                    </svg>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL LAYOUT MANAGER (MODULAR SECTIONS) -->
+    <div id="layoutManagerModal"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden transition-opacity duration-300 opacity-0">
+        <div
+            class="relative w-full max-w-md bg-[#f5f5f7] dark:bg-[#121212] border border-black/10 dark:border-white/10 p-8 rounded-3xl overflow-hidden shadow-2xl flex flex-col">
+            <button onclick="closeLayoutManagerModal()"
+                class="absolute top-4 right-4 text-black dark:text-white hover:opacity-70" aria-label="Tutup">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                    </path>
+                </svg>
+            </button>
+
+            <h3 class="text-2xl font-bold tracking-tight mb-2">Atur Urutan Seksi</h3>
+            <p class="text-sm text-black/60 dark:text-zinc-400 mb-6">Gunakan tombol panah untuk menyusun susunan layout
+                seksi di website secara dinamis, dan matikan ikon mata untuk menyembunyikan seksi.</p>
+
+            <div id="layoutSectionsList" class="space-y-3">
+                <!-- List seksi dirender secara dinamis lewat JS -->
+            </div>
+
+            <button onclick="closeLayoutManagerModal()"
+                class="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-xl transition-all active:scale-95 shadow-md">
+                Selesai Atur Tata Letak
+            </button>
+        </div>
+    </div>
+
+    <!-- IO-STYLE FLOATING TOAST NOTIFICATION -->
+    <div id="toastNotification"
+        class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] px-5 py-3 rounded-2xl bg-black/85 dark:bg-white/90 text-white dark:text-black text-xs font-semibold shadow-2xl flex items-center gap-2 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        <span id="toastText">Perubahan berhasil disimpan!</span>
+    </div>
+
+
+    <!-- TRANSLATIONS AND SYSTEM LOGIC -->
+    <script>
+        /************************************************************************
+         * 🔥 CONFIGURASI & INISIALISASI FIREBASE
+         * Silakan ganti nilai di bawah ini dengan konfigurasi dari Firebase Console Anda.
+         ************************************************************************/
+        const firebaseConfig = {
+            apiKey: "AIzaSyD4VmMFODlr-SpzJFvBs_gezRN74Wxm_g0",
+            authDomain: "vinzpro-db4e3.firebaseapp.com",
+            projectId: "vinzpro-db4e3",
+            storageBucket: "vinzpro-db4e3.firebasestorage.app",
+            messagingSenderId: "683326752366",
+            appId: "1:683326752366:web:89ea20f10705351ab8087f",
+            measurementId: "G-9MDM4VKYND"
+        };
+
+        // Inisialisasi Firebase jika config telah diisi
+        let db = null;
+        let auth = null;
+        let isFirebaseActive = false;
+
+        if (firebaseConfig.apiKey !== "YOUR_API_KEY_HERE" && firebaseConfig.apiKey !== "") {
+            try {
+                firebase.initializeApp(firebaseConfig);
+                db = firebase.firestore();
+                auth = firebase.auth();
+                isFirebaseActive = true;
+                console.log("Firebase berhasil diinisialisasi!");
+            } catch (e) {
+                console.error("Gagal menginisialisasi Firebase:", e);
+            }
+        } else {
+            console.warn("Firebase belum dikonfigurasi. Menggunakan penyimpanan lokal (fallback LocalStorage).");
+        }
+
+        /************************************************************************
+         * 📚 BILINGUAL TRANSLATION DICTIONARY (Sistem Dua Bahasa)
+         ************************************************************************/
+        const TRANSLATIONS = {
+            id: {
+                nav_home: "Utama",
+                nav_work: "Portofolio",
+                nav_about: "Profil",
+                nav_contact: "Kontak",
+                btn_admin: "Masuk Admin",
+                badge_hero: "Tersedia untuk Kolaborasi Visual",
+                hero_greeting: "Hi, I'm Marvin!",
+                hero_intro_description: "Seorang <strong>Videographer, Editor, dan Photographer</strong> berpengalaman lebih dari 5 tahun dalam pembuatan aset visual multimedia papan atas. Saat ini dipercaya memegang peran kreatif di <strong>(Dr.m) PT. Digital Rantai Maya</strong>, menukangi visual artis-artis paling terkemuka di blantika hiburan Indonesia.",
+                hero_meta: "Semarang & Jakarta, Indonesia • marvinaldian30@gmail.com • +62 851-7508-5590",
+                admin_mode_notice: "🔒 Mode Admin Aktif — Anda memiliki akses penuh untuk menambah, merubah, & mengatur susunan halaman.",
+                btn_explore: "Eksplor Portofolio",
+                btn_cv: "Detail Riwayat Hidup (CV)",
+                work_subtitle: "Galeri Kreatif Pilihan",
+                work_title: "Karya Multimedia",
+                btn_add_work: "Tambah Karya Baru (Live UI)",
+                btn_logout_admin: "Keluar Admin",
+                exp_subtitle: "Jalan Karir Profesional",
+                exp_title: "Pengalaman Kerja",
+                exp1_badge: "Pekerjaan Utama Saat Ini",
+                exp1_desc: "Dipercaya mengomandoi manajemen aset produksi multimedia, videografi, dan post-production untuk jajaran talenta/artis papan atas Indonesia di bawah naungan manajemen artis terkemuka (Dr.m), mencapai audiens nasional dan internasional skala masif.",
+                exp2_desc_list: "<li>Memimpin arah kreatif untuk 15+ produksi video musik populer (Sandrina Azzahra, Bebizy, Dudung Abdurachman, Kuki Nabila, Mage, Hyra, Drive, dll).</li><li>Meningkatkan efisiensi produksi sebesar 30% melalui optimalisasi alur kerja digital.</li><li>Mengatur tim kreatif beranggotakan 8-12 staf fotografer, videografer, dan tim editor.</li><li>Meningkatkan jangkauan media sosial klien sebesar 250% melalui pembuatan kampanye video terstruktur.</li>",
+                exp3_desc_list: "<li>Menjadi pimpinan produksi multimedia resmi untuk acara pemerintahan profil tinggi (Semarang Youth Plan, Duta Genre 2023-2025, Duta Wisata Jawa Tengah 2025).</li><li>Diberi mandat memproduksi kampanye visual berkualitas tinggi untuk anggota DPR Kota Semarang, DPRD Provinsi Jateng, dan petinggi BAPPEDA.</li>",
+                exp4_desc_list: "<li>Mendirikan dan mengembangkan Vinz Production dari proyek lepas mandiri hingga menjadi partner kreatif tepercaya dengan lebih dari 50+ klien korporasi besar.</li><li>Dipilih oleh korporasi multinasional PT ExxonMobil Lubricants Indonesia untuk menggarap aset promosi foto dan video resmi.</li><li>Membuat iklan komersial berkualitas siaran nasional yang berhasil lolos sensor untuk diputar langsung di bioskop-bioskop lokal.</li><li>Dipercaya oleh BUMN PT Kereta Api Indonesia (Persero) - Daop 4 Semarang untuk menggarap pemotretan studio jajaran pimpinan tinggi management.</li>",
+                skills_subtitle: "Sertifikasi & Pencapaian Unggul",
+                skills_title: "Keahlian & Prestasi",
+                bento_skills_title: "Alat Tempur & Spesialisasi",
+                bento_skills_desc: "Software industri standar profesional yang Marvin gunakan dalam melahirkan karya seni visual berskala masif:",
+                skill_hdr_prod: "Produksi",
+                skill_hdr_design: "Desain & UI",
+                skill_hdr_dev: "Dev & Engine",
+                unreal_milestone: "Menjadi mahasiswa pertama di sejarah Politeknik Negeri Semarang yang sukses memanfaatkan **Unreal Engine** dalam penyusunan tugas akhir tesis (Game Interaktif 3D) pada tahun 2025.",
+                award_social_title: "Kampanye Kreatif Kesehatan",
+                award_bkkbn_1: "<strong>Juara 1</strong> - Konten Video Edukasi Kesehatan Reproduksi Remaja BKKBN Provinsi Jawa Tengah 2025.",
+                award_bkkbn_2: "<strong>Juara Favorit Nasional</strong> - Kompetisi Konten Edukasi Kesehatan Reproduksi Remaja AKUKAMU Tingkat Nasional 2025.",
+                award_acad_title: "KMIPN & IoT Global",
+                award_acad_1: "<strong>Finalis Animasi</strong> - KMIPN VI 2024.",
+                award_acad_2: "<strong>Best Presentation Award</strong> - Animasi KMIPN V 2023.",
+                award_acad_3: "<strong>Gold Medal IoT & Special Award</strong> - Indonesia International IoT Olympiad (I3O) 2024.",
+                award_leader_title: "Pesona & Manajemen Event",
+                award_leader_1: "<strong>Juara Utama</strong> - Duta Influencer Putra Kota Semarang 2022.",
+                award_leader_2: "<strong>Top 10 Nasional</strong> - PORSENI XIV Solo Song Pop Competition 2024.",
+                award_leader_3: "<strong>Event Coordinator</strong> - Menyukseskan Electro Charity Concert 2024 (500+ Penonton).",
+                login_title: "Masuk Portal Creator",
+                login_subtitle: "Gunakan kredensial pengelola Vinz Production untuk mengelola portofolio.",
+                login_email_lbl: "Email Kreator",
+                login_pass_lbl: "Password",
+                login_btn_submit: "Verifikasi Keamanan",
+                add_proj_title: "Tambah Proyek Portofolio",
+                add_proj_subtitle: "Hasil pengisian ini akan langsung dirender secara real-time di galeri depan Vinz Production.",
+                lbl_proj_title: "Judul Karya",
+                lbl_proj_category: "Kategori",
+                lbl_proj_cover: "URL Gambar Cover",
+                lbl_proj_video: "URL Video (Opsional MP4/Youtube)",
+                lbl_proj_desc: "Deskripsi Karya",
+                btn_proj_submit: "Masukkan ke Galeri Sekarang!",
+                contact_subtitle: "Mari Berkolaborasi",
+                contact_title: "Mulai Hubungkan Ide Hebatmu",
+                contact_desc: "Punya produk, video sinematik, atau project kreatif yang mau diwujudkan? Ruang obrolan Vinz Production selalu terbuka lebar.",
+                btn_contact_email: "Kirim Email Sekarang"
+            },
+            en: {
+                nav_home: "Home",
+                nav_work: "Portfolio",
+                nav_about: "Profile",
+                nav_contact: "Contact",
+                btn_admin: "Admin Login",
+                badge_hero: "Available for Visual Collaboration",
+                hero_greeting: "Hi, I'm Marvin!",
+                hero_intro_description: "A <strong>Videographer, Editor, and Photographer</strong> with 5+ years of multimedia production experience. Currently leading visual production at <strong>(Dr.m) PT. Digital Rantai Maya</strong>, directing assets for some of the most prominent national artists in Indonesia.",
+                hero_meta: "Semarang & Jakarta, Indonesia • marvinaldian30@gmail.com • +62 851-7508-5590",
+                admin_mode_notice: "🔒 Admin Mode Active — You have full authorization to edit, insert & reorder layout sections.",
+                btn_explore: "Explore Portfolio",
+                btn_cv: "Detailed Resume (CV)",
+                work_subtitle: "Featured Creative Gallery",
+                work_title: "Multimedia Projects",
+                btn_add_work: "Add New Project (Live UI)",
+                btn_logout_admin: "Logout Admin",
+                exp_subtitle: "Professional Timeline",
+                exp_title: "Work Experience",
+                exp1_badge: "Current Primary Role",
+                exp1_desc: "Trusted with managing end-to-end multimedia production, videography, and post-production workflows for premier artists under the renowned (Dr.m) artist management house, reaching millions of views.",
+                exp2_desc_list: "<li>Led creative direction for 15+ music video productions (Sandrina Azzahra, Bebizy, Dudung Abdurachman, Kuki Nabila, Mage, Hyra, Drive, etc).</li><li>Boosted production pipeline efficiency by 30% through workflow digitization.</li><li>Supervised team of 8-12 personnel across cinematography, photography, and editing.</li><li>Elevated brand social reach by 250% through cohesive video campaigns.</li>",
+                exp3_desc_list: "<li>Served as the chief production lead for high-profile civic events (Semarang Youth Plan, Duta Genre 2023-2025, Central Java Tourism Ambassador 2025).</li><li>Commissioned to produce official promotional video and photography campaigns for regional BAPPEDA and legislative members.</li>",
+                exp4_desc_list: "<li>Scaled Vinz Production from a solo freelance endeavor into a trusted creative agency, servicing 50+ individual and corporate clients.</li><li>Hired by PT ExxonMobil Lubricants Indonesia to shoot high-stakes advertisement assets.</li><li>Produced and directed a cinema-grade commercial advertisement broadcasted in regional theaters.</li><li>Commissioned by state-owned PT Kereta Api Indonesia (Persero) - Daop 4 Semarang for official executive management portraits.</li>",
+                skills_subtitle: "Certifications & Accomplishments",
+                skills_title: "Skills & Awards",
+                bento_skills_title: "Tools & Specializations",
+                bento_skills_desc: "Standard professional industry tools Marvin utilizes to bring high-impact visual stories to life:",
+                skill_hdr_prod: "Production",
+                skill_hdr_design: "Design & UI",
+                skill_hdr_dev: "Dev & Engine",
+                unreal_milestone: "First student in Politeknik Negeri Semarang's history to deploy **Unreal Engine 5** for final graduation thesis (Interactive 3D Game Implementation) in 2025.",
+                award_social_title: "Social Impact Campaigns",
+                award_bkkbn_1: "<strong>1st Place</strong> - Reproductive Health Video Education Contest, BKKBN Central Java Province 2025.",
+                award_bkkbn_2: "<strong>National Favorite Champion</strong> - Reproductive Health National Video Competition AKUKAMU 2025.",
+                award_acad_title: "KMIPN & Global IoT",
+                award_acad_1: "<strong>Animation Finalist</strong> - KMIPN VI 2024.",
+                award_acad_2: "<strong>Best Presentation Award</strong> - KMIPN V Animation Category 2023.",
+                award_acad_3: "<strong>Gold Medal & Special Award IoT</strong> - Indonesia International IoT Olympiad (I3O) 2024.",
+                award_leader_title: "Pageantry & Leadership",
+                award_leader_1: "<strong>Winner</strong> - Semarang Male Youth Influencer Ambassador 2022.",
+                award_leader_2: "<strong>Top 10 National</strong> - PORSENI XIV Male Solo Pop Singer 2024.",
+                award_leader_3: "<strong>Event Coordinator</strong> - Executed Electro Charity Concert 2024 (500+ attendees).",
+                login_title: "Creator Portal Login",
+                login_subtitle: "Enter the administrative credentials of Vinz Production to unlock editing dashboard.",
+                login_email_lbl: "Creator Email",
+                login_pass_lbl: "Password",
+                login_btn_submit: "Verify Identity",
+                add_proj_title: "Add Portfolio Project",
+                add_proj_subtitle: "The project entered will be immediately compiled and updated directly in the client gallery.",
+                lbl_proj_title: "Work Title",
+                lbl_proj_category: "Category",
+                lbl_proj_cover: "Cover Image URL",
+                lbl_proj_video: "Video URL (Optional YouTube/MP4)",
+                lbl_proj_desc: "Description of Work",
+                btn_proj_submit: "Publish to Live Gallery Now",
+                contact_subtitle: "Let's Collaborate",
+                contact_title: "Unleash Your Great Vision",
+                contact_desc: "Looking to manifest a premium music video, high-end commercial ads, or breathtaking photography assets? Vinz Production is ready.",
+                btn_contact_email: "Reach Me Directly"
+            }
+        };
+
+        let currentLang = 'id'; // default language
+        const CUSTOM_TRANSLATIONS_KEY = "vinzpro_translations_custom";
+
+        function loadCustomTranslations() {
+            if (isFirebaseActive) {
+                // Listen to translation changes in real-time from Firestore settings/translations
+                db.collection("settings").doc("translations").onSnapshot((doc) => {
+                    if (doc.exists) {
+                        const custom = doc.data();
+                        for (const lang in custom) {
+                            if (TRANSLATIONS[lang]) {
+                                for (const key in custom[lang]) {
+                                    TRANSLATIONS[lang][key] = custom[lang][key];
+                                }
+                            }
+                        }
+                        applyTranslations();
+                        renderProjects();
+                    } else {
+                        console.log("Belum ada kustomisasi bahasa di Firestore.");
+                    }
+                }, (error) => {
+                    console.error("Gagal memuat kustomisasi bahasa dari Firestore:", error);
+                    loadTranslationsFromLocalStorage();
+                });
+            } else {
+                loadTranslationsFromLocalStorage();
+            }
+        }
+
+        function loadTranslationsFromLocalStorage() {
+            const saved = localStorage.getItem(CUSTOM_TRANSLATIONS_KEY);
+            if (saved) {
+                try {
+                    const custom = JSON.parse(saved);
+                    for (const lang in custom) {
+                        if (TRANSLATIONS[lang]) {
+                            for (const key in custom[lang]) {
+                                TRANSLATIONS[lang][key] = custom[lang][key];
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.error("Error loading custom translations", e);
+                }
+            }
+        }
+
+        function saveCustomTranslation(lang, key, value) {
+            if (isFirebaseActive) {
+                const updatePath = `${lang}.${key}`;
+                db.collection("settings").doc("translations").update({
+                    [updatePath]: value
+                }).then(() => {
+                    showToast("Perubahan teks berhasil disimpan!");
+                }).catch((error) => {
+                    // Jika dokumen belum dibuat sama sekali, buat baru dengan merge: true
+                    if (error.code === 'not-found') {
+                        db.collection("settings").doc("translations").set({
+                            [lang]: {
+                                [key]: value
+                            }
+                        }, { merge: true }).then(() => {
+                            showToast("Perubahan teks berhasil disimpan!");
+                        });
+                    } else {
+                        console.error("Gagal menyimpan kustomisasi bahasa:", error);
+                        showToast("Gagal menyimpan teks ke database online.");
+                    }
+                });
+            } else {
+                let saved = localStorage.getItem(CUSTOM_TRANSLATIONS_KEY);
+                let custom = saved ? JSON.parse(saved) : { id: {}, en: {} };
+                if (!custom[lang]) custom[lang] = {};
+                custom[lang][key] = value;
+                localStorage.setItem(CUSTOM_TRANSLATIONS_KEY, JSON.stringify(custom));
+                showToast("Perubahan teks berhasil disimpan!");
+            }
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'id' ? 'en' : 'id';
+            document.getElementById('langToggle').textContent = currentLang === 'id' ? 'EN' : 'ID';
+            applyTranslations();
+            renderProjects();
+        }
+
+        function applyTranslations() {
+            document.querySelectorAll('[data-localize]').forEach(el => {
+                const key = el.getAttribute('data-localize');
+                if (TRANSLATIONS[currentLang] && TRANSLATIONS[currentLang][key]) {
+                    el.innerHTML = TRANSLATIONS[currentLang][key];
+                }
+            });
+        }
+
+        document.getElementById('langToggle').addEventListener('click', toggleLanguage);
+    </script>
+
+    <!-- KOSMOS CANVAS ENGINE CODE -->
+    <script>
+        /************************************************************************
+         * 🌌 KOSMOS PHYSICS ENGINE (Google Anti-Gravity Canvas Simulation)
+         ************************************************************************/
+        const canvas = document.getElementById('cosmosCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let particles = [];
+        let orbs = [];
+        const mouse = { x: -1000, y: -1000, active: false };
+
+        // Konfigurasi Partikel & Kekuatan Fisika (Dioptimasi untuk performa HP agar tidak lag)
+        const isMobileDevice = window.innerWidth < 768;
+        const PARTICLE_COUNT = isMobileDevice ? 30 : 85;
+        const ORB_COUNT = isMobileDevice ? 2 : 4;
+        const REPEL_RADIUS = isMobileDevice ? 90 : 160;
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            initCosmos();
+        }
+
+        class CosmosParticle {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.vx = (Math.random() - 0.5) * 0.35;
+                this.vy = (Math.random() - 0.5) * 0.35;
+                this.size = Math.random() * 2 + 0.5;
+                this.alpha = Math.random() * 0.5 + 0.25;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // Batas Layar Bouncing
+                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+
+                // Hitung Interaksi Kursor Anti-Gravitasi
+                if (mouse.active) {
+                    const dx = this.x - mouse.x;
+                    const dy = this.y - mouse.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < REPEL_RADIUS) {
+                        const force = (REPEL_RADIUS - dist) / REPEL_RADIUS;
+                        const angle = Math.atan2(dy, dx);
+
+                        this.x += Math.cos(angle) * force * 5;
+                        this.y += Math.sin(angle) * force * 5;
+                    }
+                }
+            }
+
+            draw() {
+                const isDark = document.documentElement.classList.contains('dark');
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = isDark
+                    ? `rgba(139, 92, 246, ${this.alpha})` // Ungu pastel
+                    : `rgba(59, 130, 246, ${this.alpha * 0.7})`; // Biru pastel
+                ctx.fill();
+            }
+        }
+
+        class CosmicOrb {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.radius = isMobileDevice ? (Math.random() * 80 + 50) : (Math.random() * 150 + 100);
+                this.vx = (Math.random() - 0.5) * 0.2;
+                this.vy = (Math.random() - 0.5) * 0.2;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (this.x - this.radius < -100 || this.x + this.radius > canvas.width + 100) this.vx *= -1;
+                if (this.y - this.radius < -100 || this.y + this.radius > canvas.height + 100) this.vy *= -1;
+
+                if (mouse.active) {
+                    const dx = this.x - mouse.x;
+                    const dy = this.y - mouse.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < REPEL_RADIUS + 100) {
+                        const force = ((REPEL_RADIUS + 100) - dist) / (REPEL_RADIUS + 100);
+                        const angle = Math.atan2(dy, dx);
+                        this.x += Math.cos(angle) * force * 2;
+                        this.y += Math.sin(angle) * force * 2;
+                    }
+                }
+            }
+
+            draw() {
+                const isDark = document.documentElement.classList.contains('dark');
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+
+                const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius);
+                if (isDark) {
+                    grad.addColorStop(0, 'rgba(99, 102, 241, 0.05)'); // Indigo sangat kabur
+                    grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                } else {
+                    grad.addColorStop(0, 'rgba(59, 130, 246, 0.03)'); // Biru langit super kabur
+                    grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                }
+
+                ctx.fillStyle = grad;
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        function initCosmos() {
+            particles = [];
+            orbs = [];
+            for (let i = 0; i < PARTICLE_COUNT; i++) {
+                particles.push(new CosmosParticle());
+            }
+            for (let i = 0; i < ORB_COUNT; i++) {
+                orbs.push(new CosmicOrb());
+            }
+        }
+
+        function animateCosmos() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            orbs.forEach(orb => {
+                orb.update();
+                orb.draw();
+            });
+
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+
+            requestAnimationFrame(animateCosmos);
+        }
+
+        // Event Listeners Kosmos
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+            mouse.active = true;
+        });
+
+        window.addEventListener('mouseleave', () => {
+            mouse.active = false;
+        });
+
+        window.addEventListener('touchmove', (e) => {
+            if (e.touches.length > 0) {
+                mouse.x = e.touches[0].clientX;
+                mouse.y = e.touches[0].clientY;
+                mouse.active = true;
+            }
+        });
+
+        window.addEventListener('touchend', () => {
+            mouse.active = false;
+        });
+
+        window.addEventListener('resize', resizeCanvas);
+    </script>
+
+    <!-- MAIN APP CORE CODE -->
+    <script>
+        /************************************************************************
+         * 📦 ARRAY KARYA UTAMA (Disimpan di LocalStorage agar permanen!)
+         ************************************************************************/
+        const DEFAULT_PROJECTS = [
+            {
+                id: 1,
+                title_id: "Sandrina - Habis Minum Apa (MV)",
+                title_en: "Sandrina - Habis Minum Apa (Music Video)",
+                category_id: "Videografi & Editor",
+                category_en: "Videography & Lead Editing",
+                description_id: "Karya penyutradaraan video musik komersial untuk penyanyi Sandrina Azzahra dengan total pencapaian pemirsa menakjubkan sebanyak 3.8 Juta+ penonton.",
+                description_en: "Visual direction and post-production for Sandrina Azzahra's hit single, generating over 3.8 Million+ combined organic views across digital platforms.",
+                imageUrl: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=800&q=70",
+                videoUrl: "https://www.youtube.com/watch?v=SshsX6A_b8w",
+                mediaType: "youtube",
+                isFeatured: true
+            },
+            {
+                id: 2,
+                title_id: "Dudung Abdurachman - Ayo Ngopi (MV)",
+                title_en: "Dudung Abdurachman - Ayo Ngopi (MV)",
+                category_id: "Cinematography & Post-Production",
+                category_en: "Cinematography & Post-Production",
+                description_id: "Video musik fenomenal bermuatan budaya dan kolaborasi akrab yang sukses meraih respon hangat masyarakat Indonesia dengan perolehan views menembus 1 Juta+ penonton.",
+                description_en: "Cohesive visual composition and video production for national music release, amassing 1 Million+ views on social streaming services.",
+                imageUrl: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=800&q=70",
+                videoUrl: "https://www.youtube.com/watch?v=8vB87kQ2g9w",
+                mediaType: "youtube",
+                isFeatured: false
+            },
+            {
+                id: 3,
+                title_id: "Bebizy - Janda Bolong (MV)",
+                title_en: "Bebizy - Janda Bolong (Music Video)",
+                category_id: "Sutradara & Editor Utama",
+                category_en: "Lead Director & Post-Production",
+                description_id: "Produksi video musik dangdut modern dengan visual sinematik megah yang dinamis, berhasil menembus 747K+ views dengan tingkat kepuasan retensi penonton yang sangat stabil.",
+                description_en: "Premium video delivery for regional music production, optimizing visual pacing and colors, capturing 747k+ views.",
+                imageUrl: "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&w=800&q=70",
+                videoUrl: "https://www.youtube.com/watch?v=hlyZ-GjVshM",
+                mediaType: "youtube",
+                isFeatured: true
+            },
+            {
+                id: 4,
+                title_id: "Film Pendek Horor: RAWUH",
+                title_en: "RAWUH - Horror Short Film",
+                category_id: "Penyusun Cerita & Produser",
+                category_en: "Storyboarding & Producer",
+                description_id: "Karya film pendek fiksi horor yang dirancang menggunakan teknik bayangan dingin, tata musik menyeramkan, dan sinematografi mendalam, ditonton sebanyak 3.5K+ kali di YouTube.",
+                description_en: "Award-winning atmospheric short horror film incorporating tension, high contrast color grading, and pristine audio pacing, reaching 3.5k+ organic views.",
+                imageUrl: "https://images.unsplash.com/photo-1497034825429-c343d7c6a68f?auto=format&fit=crop&w=800&q=70",
+                videoUrl: "https://www.youtube.com/watch?v=6_9oOInX9rI",
+                mediaType: "youtube",
+                isFeatured: false
+            }
+        ];
+
+        let MY_PROJECTS = [];
+        const STORAGE_KEY = "vinz_portfolio_projects_data_v2";
+
+        function initProjectsData() {
+            if (isFirebaseActive) {
+                // Gunakan listener real-time dari Firestore
+                db.collection("projects").orderBy("createdAt", "desc").onSnapshot((querySnapshot) => {
+                    MY_PROJECTS = [];
+                    querySnapshot.forEach((doc) => {
+                        const data = doc.data();
+                        MY_PROJECTS.push({
+                            id: doc.id,
+                            title_id: data.title_id || "",
+                            title_en: data.title_en || "",
+                            category_id: data.category_id || "",
+                            category_en: data.category_en || "",
+                            description_id: data.description_id || "",
+                            description_en: data.description_en || "",
+                            imageUrl: data.imageUrl || "",
+                            videoUrl: data.videoUrl || "",
+                            mediaType: data.mediaType || "image",
+                            isFeatured: data.isFeatured || false,
+                            createdAt: data.createdAt
+                        });
+                    });
+
+                    // Jika database kosong, isi dengan data default
+                    if (MY_PROJECTS.length === 0) {
+                        seedDefaultProjects();
+                    } else {
+                        renderProjects();
+                    }
+                }, (error) => {
+                    console.error("Gagal mendengarkan koleksi projects:", error);
+                    loadProjectsFromLocalStorage();
+                });
+            } else {
+                loadProjectsFromLocalStorage();
+            }
+        }
+
+        function loadProjectsFromLocalStorage() {
+            const savedData = localStorage.getItem(STORAGE_KEY);
+            if (savedData) {
+                try {
+                    MY_PROJECTS = JSON.parse(savedData);
+                } catch (e) {
+                    MY_PROJECTS = [...DEFAULT_PROJECTS];
+                }
+            } else {
+                MY_PROJECTS = [...DEFAULT_PROJECTS];
+                saveProjectsToStorage();
+            }
+            renderProjects();
+        }
+
+        function seedDefaultProjects() {
+            console.log("Firebase projects kosong, mengunggah data default...");
+            const promises = DEFAULT_PROJECTS.map((proj, index) => {
+                const docId = String(proj.id);
+                const docData = {
+                    title_id: proj.title_id,
+                    title_en: proj.title_en,
+                    category_id: proj.category_id,
+                    category_en: proj.category_en,
+                    description_id: proj.description_id,
+                    description_en: proj.description_en,
+                    imageUrl: proj.imageUrl,
+                    videoUrl: proj.videoUrl,
+                    mediaType: proj.mediaType,
+                    isFeatured: proj.isFeatured,
+                    createdAt: Date.now() - index * 1000
+                };
+                return db.collection("projects").doc(docId).set(docData);
+            });
+            Promise.all(promises)
+                .then(() => console.log("Seeding data default berhasil!"))
+                .catch((err) => console.error("Gagal seeding data default:", err));
+        }
+
+        function saveProjectsToStorage() {
+            if (!isFirebaseActive) {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(MY_PROJECTS));
+            }
+        }
+
+        // Kredensial Akun Admin Vinz Production
+        const ADMIN_CREDENTIALS = {
+            email: "admin@vinzproduction.com",
+            password: "admin123"
+        };
+        let isAdminActive = false;
+
+        function checkAdminSession() {
+            if (isFirebaseActive) {
+                auth.onAuthStateChanged((user) => {
+                    isAdminActive = !!user;
+                    updateAdminUIState();
+                    renderProjects();
+                });
+            } else {
+                isAdminActive = sessionStorage.getItem('vinz_is_admin') === 'true';
+                updateAdminUIState();
+            }
+        }
+
+        function updateAdminUIState() {
+            const lockStatus = document.getElementById('lockStatus');
+            const unlockStatus = document.getElementById('unlockStatus');
+            const adminControls = document.getElementById('adminControls');
+            const adminGreeting = document.getElementById('adminGreeting');
+
+            if (isAdminActive) {
+                lockStatus.classList.add('hidden');
+                unlockStatus.classList.remove('hidden');
+                adminControls.classList.remove('hidden');
+                adminGreeting.classList.remove('hidden');
+                enableInlineEditing();
+            } else {
+                lockStatus.classList.remove('hidden');
+                unlockStatus.classList.add('hidden');
+                adminControls.classList.add('hidden');
+                adminGreeting.classList.add('hidden');
+                disableInlineEditing();
+            }
+        }
+
+        // Caching elemen DOM
+        const themeToggleBtn = document.getElementById('themeToggle');
+        const projectsGrid = document.getElementById('projectsGrid');
+
+        // Modal Media
+        const mediaModal = document.getElementById('mediaModal');
+        const modalVideo = document.getElementById('modalVideo');
+        const modalImg = document.getElementById('modalImg');
+        const modalIframeContainer = document.getElementById('modalIframeContainer');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalCategory = document.getElementById('modalCategory');
+        const modalDesc = document.getElementById('modalDesc');
+        const modalSourceBadge = document.getElementById('modalSourceBadge');
+        const modalPlayerArea = document.getElementById('modalPlayerArea');
+
+        // Modal Login & Form Tambah
+        const addProjectModal = document.getElementById('addProjectModal');
+        const adminLoginModal = document.getElementById('adminLoginModal');
+        const loginEmailInput = document.getElementById('loginEmail');
+        const loginPasswordInput = document.getElementById('loginPassword');
+        const loginErrorMessage = document.getElementById('loginErrorMessage');
+
+        // Variabel Tambahan Untuk Image Conversion (.webp)
+        let activeCoverTab = 'upload'; // default tab
+        let processedWebpBase64 = ''; // menyimpan base64 webp yang sudah terkompresi
+
+        // Navigasi & Aksi Tombol Login
+        document.getElementById('adminToggle').addEventListener('click', () => {
+            if (isAdminActive) {
+                logoutAdmin();
+            } else {
+                openAdminLoginModal();
+            }
+        });
+
+        // Mobile Admin toggle action
+        document.getElementById('mobileAdminToggle').addEventListener('click', () => {
+            closeMobileMenu();
+            if (isAdminActive) {
+                logoutAdmin();
+            } else {
+                openAdminLoginModal();
+            }
+        });
+
+        function openAdminLoginModal() {
+            loginEmailInput.value = "";
+            loginPasswordInput.value = "";
+            loginErrorMessage.textContent = "";
+            loginErrorMessage.classList.add('opacity-0');
+            adminLoginModal.classList.remove('hidden');
+            setTimeout(() => {
+                adminLoginModal.classList.add('opacity-100');
+                loginEmailInput.focus();
+            }, 50);
+        }
+
+        function closeAdminLoginModal() {
+            adminLoginModal.classList.remove('opacity-100');
+            setTimeout(() => {
+                adminLoginModal.classList.add('hidden');
+            }, 300);
+        }
+
+        function handleAdminLogin(event) {
+            event.preventDefault();
+            const email = loginEmailInput.value.trim();
+            const password = loginPasswordInput.value;
+
+            if (isFirebaseActive) {
+                const loginSubmitBtn = event.target.querySelector('button[type="submit"]');
+                if (loginSubmitBtn) loginSubmitBtn.disabled = true;
+
+                auth.signInWithEmailAndPassword(email, password)
+                    .then((userCredential) => {
+                        closeAdminLoginModal();
+                        showToast("Selamat datang kembali, Marvin!");
+                    })
+                    .catch((error) => {
+                        console.error("Login failed:", error);
+                        loginErrorMessage.textContent = "Email atau Password salah!";
+                        loginErrorMessage.classList.remove('opacity-0');
+                        loginPasswordInput.value = "";
+                        loginPasswordInput.focus();
+                    })
+                    .finally(() => {
+                        if (loginSubmitBtn) loginSubmitBtn.disabled = false;
+                    });
+            } else {
+                if (email === ADMIN_CREDENTIALS.email && password === ADMIN_CREDENTIALS.password) {
+                    isAdminActive = true;
+                    sessionStorage.setItem('vinz_is_admin', 'true');
+                    updateAdminUIState();
+                    renderProjects();
+                    closeAdminLoginModal();
+                    showToast("Selamat datang kembali, Marvin!");
+                } else {
+                    loginErrorMessage.textContent = "Email atau Password salah!";
+                    loginErrorMessage.classList.remove('opacity-0');
+                    loginPasswordInput.value = "";
+                    loginPasswordInput.focus();
+                }
+            }
+        }
+
+        function logoutAdmin() {
+            if (isFirebaseActive) {
+                auth.signOut().then(() => {
+                    showToast("Keluar dari Mode Admin.");
+                }).catch((error) => {
+                    console.error("Logout failed:", error);
+                    showToast("Gagal keluar dari Mode Admin.");
+                });
+            } else {
+                isAdminActive = false;
+                sessionStorage.removeItem('vinz_is_admin');
+                updateAdminUIState();
+                renderProjects();
+                showToast("Keluar dari Mode Admin.");
+            }
+        }
+
+        // Logika Switcher daylight & night mode
+        themeToggleBtn.addEventListener('click', () => {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        });
+
+        if (localStorage.getItem('theme') === 'light' ||
+            (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: light)').matches)) {
+            document.documentElement.classList.remove('dark');
+        } else {
+            document.documentElement.classList.add('dark');
+        }
+
+        /************************************************************************
+         * 🌐 SMART EMBED URL CONVERTER (TikTok, Instagram, YouTube, Drive)
+         ************************************************************************/
+        function getEmbedUrl(url, type) {
+            if (!url) return '';
+            url = url.trim();
+
+            if (type === 'youtube') {
+                // Konversi YouTube biasa
+                let regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+                let match = url.match(regExp);
+                if (match && match[2].length === 11) {
+                    return `https://www.youtube.com/embed/${match[2]}`;
+                }
+                // Konversi YouTube Shorts
+                let shortsReg = /\/shorts\/([a-zA-Z0-9_-]+)/;
+                let shortsMatch = url.match(shortsReg);
+                if (shortsMatch) {
+                    return `https://www.youtube.com/embed/${shortsMatch[1]}`;
+                }
+            }
+
+            if (type === 'instagram') {
+                // Konversi Instagram Post atau Reels ke Embed Frame
+                let regExp = /(?:instagram\.com)\/(?:p|reel)\/([a-zA-Z0-9_-]+)/;
+                let match = url.match(regExp);
+                if (match) {
+                    return `https://www.instagram.com/p/${match[1]}/embed`;
+                }
+            }
+
+            if (type === 'tiktok') {
+                // Konversi TikTok Video URL ke Embed Frame
+                let regExp = /\/video\/(\d+)/;
+                let match = url.match(regExp);
+                if (match) {
+                    return `https://www.tiktok.com/embed/v2/${match[1]}`;
+                }
+            }
+
+            if (type === 'drive') {
+                // Konversi Sharing Link Google Drive menjadi Embed Preview Link
+                let regExp = /\/file\/d\/([a-zA-Z0-9_-]+)/;
+                let match = url.match(regExp);
+                if (match) {
+                    return `https://drive.google.com/file/d/${match[1]}/preview`;
+                }
+            }
+
+            return url; // fallback jika sudah berupa link embed / tidak dikenal
+        }
+
+        function handleMediaTypeChange() {
+            const select = document.getElementById('formMediaType');
+            const val = select.value;
+            const inputLabel = document.getElementById('formVideoUrlLabel');
+            const inputField = document.getElementById('formVideoUrl');
+            const hint = document.getElementById('formUrlHint');
+
+            inputField.required = (val !== 'image');
+
+            if (val === 'image') {
+                inputLabel.textContent = "URL Video / Link Social Media (Opsional)";
+                hint.textContent = "Media berupa gambar statis murni. Input link video bisa dikosongkan.";
+                inputField.placeholder = "Kosongkan saja";
+            } else if (val === 'video') {
+                inputLabel.textContent = "URL Video Direct (.mp4)";
+                hint.textContent = "Masukkan link video direct berformat MP4 agar diputar di video player internal.";
+                inputField.placeholder = "https://example.com/assets/video.mp4";
+            } else if (val === 'youtube') {
+                inputLabel.textContent = "Link Video / Shorts YouTube";
+                hint.textContent = "Tempel link sharing biasa dari YouTube. Program otomatis mendeteksi dan mengonversi link YouTube Shorts.";
+                inputField.placeholder = "https://www.youtube.com/watch?v=SshsX6A_b8w atau https://youtu.be/...";
+            } else if (val === 'instagram') {
+                inputLabel.textContent = "Link Postingan / Reels Instagram";
+                hint.textContent = "Tempel link post atau reels Instagram dari browser. Iframe akan memuat preview interaktif instagram.";
+                inputField.placeholder = "https://www.instagram.com/reel/C_abc123/";
+            } else if (val === 'tiktok') {
+                inputLabel.textContent = "Link Video TikTok";
+                hint.textContent = "Pastikan link berisi ID Video TikTok untuk merender player asli TikTok di modal.";
+                inputField.placeholder = "https://www.tiktok.com/@username/video/1234567890123456789";
+            } else if (val === 'drive') {
+                inputLabel.textContent = "Link Berbagi File Google Drive";
+                hint.textContent = "Pastikan file Drive disetel 'Siapa saja yang memiliki link dapat melihat', lalu tempel link berbaginya di sini.";
+                inputField.placeholder = "https://drive.google.com/file/d/FILE_ID/view?usp=sharing";
+            }
+        }
+
+        /************************************************************************
+         * 🛠️ SISTEM CLIENT-SIDE COMPRESSOR TO WEBP & ASPECT RATIO 16:9
+         ************************************************************************/
+        function switchCoverTab(tabType) {
+            activeCoverTab = tabType;
+            const btnUpload = document.getElementById('tabUpload');
+            const btnUrl = document.getElementById('tabUrl');
+            const groupUpload = document.getElementById('coverUploadGroup');
+            const groupUrl = document.getElementById('coverUrlGroup');
+            const imgUrlField = document.getElementById('formImgUrl');
+
+            if (tabType === 'upload') {
+                btnUpload.className = "flex-1 text-center py-1.5 text-xs font-semibold rounded-md bg-white dark:bg-zinc-800 text-blue-500 shadow-sm transition-all";
+                btnUrl.className = "flex-1 text-center py-1.5 text-xs font-semibold rounded-md text-zinc-500 dark:text-zinc-400 transition-all";
+                groupUpload.classList.remove('hidden');
+                groupUrl.classList.add('hidden');
+                imgUrlField.required = false;
+            } else {
+                btnUpload.className = "flex-1 text-center py-1.5 text-xs font-semibold rounded-md text-zinc-500 dark:text-zinc-400 transition-all";
+                btnUrl.className = "flex-1 text-center py-1.5 text-xs font-semibold rounded-md bg-white dark:bg-zinc-800 text-blue-500 shadow-sm transition-all";
+                groupUpload.classList.add('hidden');
+                groupUrl.classList.remove('hidden');
+                imgUrlField.required = true;
+            }
+        }
+
+        function handleFileWebPConversion(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const previewContainer = document.getElementById('imgFilePreviewContainer');
+            const previewImg = document.getElementById('imgFilePreview');
+            const submitBtn = document.getElementById('btnSubmitProject');
+            const submitText = document.getElementById('submitBtnText');
+            const submitSpinner = document.getElementById('submitBtnSpinner');
+
+            // Aktifkan loading spinner pada form
+            submitBtn.disabled = true;
+            submitText.textContent = "Mengonversi ke .WebP...";
+            submitSpinner.classList.remove('hidden');
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const img = new Image();
+                img.onload = function () {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+
+                    // Rasio Target Emas 16:9 (Ideal lebar 800px demi performa kilat mobile Chrome)
+                    const targetWidth = 800;
+                    const targetHeight = 450;
+                    canvas.width = targetWidth;
+                    canvas.height = targetHeight;
+
+                    // Mengalkulasi Center-Cropping (Pemotongan Tengah agar tidak gepeng)
+                    const imgRatio = img.width / img.height;
+                    const targetRatio = targetWidth / targetHeight;
+                    let sx = 0, sy = 0, sWidth = img.width, sHeight = img.height;
+
+                    if (imgRatio > targetRatio) {
+                        sWidth = img.height * targetRatio;
+                        sx = (img.width - sWidth) / 2;
+                    } else {
+                        sHeight = img.width / targetRatio;
+                        sy = (img.height - sHeight) / 2;
+                    }
+
+                    // Gambar di atas Canvas dengan cropping yang presisi
+                    ctx.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, targetWidth, targetHeight);
+
+                    // Konversikan langsung ke .webp dengan kualitas kompresi premium seimbang (75%)
+                    processedWebpBase64 = canvas.toDataURL('image/webp', 0.75);
+
+                    // Tampilkan preview instan
+                    previewImg.src = processedWebpBase64;
+                    previewContainer.classList.remove('hidden');
+
+                    // Matikan loading spinner
+                    submitBtn.disabled = false;
+                    submitText.textContent = "Masukkan ke Galeri Sekarang!";
+                    submitSpinner.classList.add('hidden');
+                    showToast("Foto berhasil dikonversi ke WebP & dicrop 16:9!");
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearSelectedFile() {
+            document.getElementById('formImgFile').value = '';
+            document.getElementById('imgFilePreviewContainer').classList.add('hidden');
+            document.getElementById('imgFilePreview').src = '';
+            processedWebpBase64 = '';
+        }
+
+        // Render card proyek ke grid
+        function renderProjects() {
+            projectsGrid.innerHTML = '';
+
+            MY_PROJECTS.forEach((project) => {
+                const card = document.createElement('div');
+                card.className = "group relative bg-white/40 dark:bg-white/[0.01] border border-black/[0.06] dark:border-white/[0.03] rounded-3xl overflow-hidden backdrop-blur-md hover:border-black/15 dark:hover:border-white/15 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 cursor-pointer";
+
+                card.onclick = (e) => {
+                    if (e.target.closest('.btn-delete-card')) return;
+                    openProjectDetails(project.id);
+                };
+
+                // Tampilkan Badge Khusus untuk Jenis Media yang Berbeda
+                let badgeHtml = '';
+                const mType = project.mediaType || 'image';
+
+                if (mType === 'youtube') {
+                    badgeHtml = `
+                        <span class="absolute top-4 left-4 z-10 flex items-center gap-1 bg-rose-600 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-widest">
+                            YouTube
+                        </span>
+                    `;
+                } else if (mType === 'instagram') {
+                    badgeHtml = `
+                        <span class="absolute top-4 left-4 z-10 flex items-center gap-1 bg-gradient-to-tr from-yellow-500 via-red-500 to-purple-600 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-widest">
+                            Instagram
+                        </span>
+                    `;
+                } else if (mType === 'tiktok') {
+                    badgeHtml = `
+                        <span class="absolute top-4 left-4 z-10 flex items-center gap-1 bg-black text-white border border-zinc-800 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-widest">
+                            TikTok
+                        </span>
+                    `;
+                } else if (mType === 'drive') {
+                    badgeHtml = `
+                        <span class="absolute top-4 left-4 z-10 flex items-center gap-1 bg-emerald-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-widest">
+                            Google Drive
+                        </span>
+                    `;
+                } else if (mType === 'video') {
+                    badgeHtml = `
+                        <span class="absolute top-4 left-4 z-10 flex items-center gap-1 bg-blue-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-widest">
+                            Video MP4
+                        </span>
+                    `;
+                }
+
+                const featuredBadge = project.isFeatured ? `
+                    <span class="absolute top-4 right-4 z-10 bg-blue-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-widest">
+                        Populer
+                    </span>
+                ` : '';
+
+                const deleteButtonHtml = isAdminActive ? `
+                    <button onclick="handleDeleteProject('${project.id}')" class="btn-delete-card absolute bottom-4 right-4 z-20 flex items-center justify-center bg-rose-500 hover:bg-rose-600 active:scale-90 text-white p-2 rounded-full transition-all shadow-md" title="Hapus Karya">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-16v8M4 7h16"></path></svg>
+                    </button>
+                ` : '';
+
+                const currentTitle = currentLang === 'id' ? project.title_id : project.title_en;
+                const currentCategory = currentLang === 'id' ? project.category_id : project.category_en;
+                const currentDesc = currentLang === 'id' ? project.description_id : project.description_en;
+
+                card.innerHTML = `
+                    <div class="aspect-video w-full overflow-hidden relative">
+                        ${badgeHtml}
+                        ${featuredBadge}
+                        <img src="${project.imageUrl}" alt="${currentTitle}" class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out" onerror="this.src='https://placehold.co/800x450/1d1d1f/ffffff?text=Karya+Terbaik'">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
+                            <span class="text-white text-xs font-semibold flex items-center gap-1">
+                                Klik untuk melihat detail & Putar media 
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="p-6 md:p-8 relative font-sans">
+                        <span class="text-xs font-semibold text-blue-500 uppercase tracking-widest">${currentCategory}</span>
+                        <h3 class="text-xl md:text-2xl font-bold tracking-tight mt-1 mb-3 group-hover:text-blue-500 transition-colors">${currentTitle}</h3>
+                        <p class="text-black/60 dark:text-zinc-400 font-light text-sm leading-relaxed line-clamp-2 pr-10">${currentDesc}</p>
+                        ${deleteButtonHtml}
+                    </div>
+                `;
+
+                projectsGrid.appendChild(card);
+            });
+        }
+
+        function handleDeleteProject(id) {
+            const idStr = String(id);
+            if (isFirebaseActive) {
+                db.collection("projects").doc(idStr).delete()
+                    .then(() => {
+                        console.log("Proyek berhasil dihapus dari Firestore.");
+                        showToast("Proyek berhasil dihapus.");
+                    })
+                    .catch((error) => {
+                        console.error("Gagal menghapus proyek:", error);
+                        showToast("Gagal menghapus proyek dari database online.");
+                    });
+            } else {
+                MY_PROJECTS = MY_PROJECTS.filter(p => String(p.id) !== idStr);
+                saveProjectsToStorage();
+                renderProjects();
+                showToast("Proyek berhasil dihapus.");
+            }
+        }
+
+        function openProjectDetails(id) {
+            const project = MY_PROJECTS.find(p => p.id === id);
+            if (!project) return;
+
+            // Bersihkan frame modal
+            modalVideo.classList.add('hidden');
+            modalImg.classList.add('hidden');
+            modalIframeContainer.classList.add('hidden');
+            modalVideo.src = "";
+            modalImg.src = "";
+            modalIframeContainer.innerHTML = "";
+
+            const mType = project.mediaType || 'image';
+
+            // Menyesuaikan Aspek Rasio Modal Player demi kenyamanan HP (Potrait untuk Reels/TikTok)
+            modalPlayerArea.className = "w-full bg-black relative flex items-center justify-center overflow-hidden transition-all duration-300";
+            if (mType === 'tiktok' || mType === 'instagram') {
+                modalPlayerArea.classList.add('aspect-[9/11]', 'max-h-[70vh]');
+            } else {
+                modalPlayerArea.classList.add('aspect-video', 'max-h-[50vh]', 'md:max-h-[60vh]');
+            }
+
+            const currentTitle = currentLang === 'id' ? project.title_id : project.title_en;
+            const currentCategory = currentLang === 'id' ? project.category_id : project.category_en;
+            const currentDesc = currentLang === 'id' ? project.description_id : project.description_en;
+
+            // Memilih badge platform
+            modalSourceBadge.textContent = mType;
+            modalSourceBadge.className = "text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider ";
+
+            if (mType === 'youtube') modalSourceBadge.classList.add('bg-rose-500/20', 'text-rose-600', 'dark:text-rose-400');
+            else if (mType === 'instagram') modalSourceBadge.classList.add('bg-purple-500/20', 'text-purple-600', 'dark:text-purple-400');
+            else if (mType === 'tiktok') modalSourceBadge.classList.add('bg-zinc-500/20', 'text-zinc-600', 'dark:text-zinc-400');
+            else if (mType === 'drive') modalSourceBadge.classList.add('bg-emerald-500/20', 'text-emerald-600', 'dark:text-emerald-400');
+            else if (mType === 'video') modalSourceBadge.classList.add('bg-blue-500/20', 'text-blue-600', 'dark:text-blue-400');
+            else modalSourceBadge.classList.add('bg-zinc-500/10', 'text-zinc-500');
+
+            // Render Berdasarkan Tipe Media
+            if (mType === 'image') {
+                modalImg.classList.remove('hidden');
+                modalImg.src = project.imageUrl;
+            } else if (mType === 'video') {
+                modalVideo.classList.remove('hidden');
+                modalVideo.src = project.videoUrl;
+            } else {
+                // Gunakan Smart URL Parser untuk platform social media & Drive
+                const embedUrl = getEmbedUrl(project.videoUrl, mType);
+                modalIframeContainer.classList.remove('hidden');
+                modalIframeContainer.innerHTML = `
+                    <iframe 
+                        class="w-full h-full" 
+                        src="${embedUrl}" 
+                        frameborder="0" 
+                        allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" 
+                        allowfullscreen>
+                    </iframe>`;
+            }
+
+            modalTitle.textContent = currentTitle;
+            modalCategory.textContent = currentCategory;
+            modalDesc.textContent = currentDesc;
+
+            mediaModal.classList.remove('hidden');
+            setTimeout(() => {
+                mediaModal.classList.add('opacity-100');
+            }, 50);
+        }
+
+        function closeMediaModal() {
+            mediaModal.classList.remove('opacity-100');
+            setTimeout(() => {
+                mediaModal.classList.add('hidden');
+                modalVideo.src = "";
+                modalIframeContainer.innerHTML = "";
+            }, 300);
+        }
+
+        function openAddProjectModal() {
+            if (!isAdminActive) return;
+            // Kembalikan ke tab upload bawaan
+            switchCoverTab('upload');
+            clearSelectedFile();
+            addProjectModal.classList.remove('hidden');
+            setTimeout(() => {
+                addProjectModal.classList.add('opacity-100');
+            }, 50);
+        }
+
+        function closeAddProjectModal() {
+            addProjectModal.classList.remove('opacity-100');
+            setTimeout(() => {
+                addProjectModal.classList.add('hidden');
+                clearSelectedFile();
+            }, 300);
+        }
+
+        function handleLiveAddProject(event) {
+            event.preventDefault();
+            if (!isAdminActive) return;
+
+            const title = document.getElementById('formTitle').value;
+            const category = document.getElementById('formCategory').value;
+            const videoUrl = document.getElementById('formVideoUrl').value;
+            const mediaType = document.getElementById('formMediaType').value;
+            const description = document.getElementById('formDesc').value;
+
+            // Pilih Cover: Ambil WebP yang dikonversi dari Upload atau ambil link URL biasa
+            let finalImgUrl = '';
+            if (activeCoverTab === 'upload') {
+                if (!processedWebpBase64) {
+                    showToast("Harap pilih dan unggah foto cover terlebih dahulu!");
+                    return;
+                }
+                finalImgUrl = processedWebpBase64;
+            } else {
+                finalImgUrl = document.getElementById('formImgUrl').value;
+            }
+
+            const newProject = {
+                title_id: title,
+                title_en: title,
+                category_id: category,
+                category_en: category,
+                description_id: description,
+                description_en: description,
+                imageUrl: finalImgUrl,
+                videoUrl,
+                mediaType,
+                isFeatured: false,
+                createdAt: Date.now()
+            };
+
+            if (isFirebaseActive) {
+                const docId = Date.now().toString();
+                db.collection("projects").doc(docId).set(newProject)
+                    .then(() => {
+                        console.log("Proyek berhasil disimpan ke Firestore.");
+                    })
+                    .catch((error) => {
+                        console.error("Gagal menyimpan ke Firestore:", error);
+                        showToast("Gagal menyimpan proyek ke database online.");
+                    });
+            } else {
+                newProject.id = Date.now();
+                MY_PROJECTS.unshift(newProject);
+                saveProjectsToStorage();
+                renderProjects();
+            }
+
+            document.getElementById('addProjectForm').reset();
+            closeAddProjectModal();
+
+            document.getElementById('work').scrollIntoView();
+            showToast("Proyek media sosial baru berhasil diterbitkan!");
+        }
+    </script>
+
+    <!-- WEB BUILDER & INLINE EDITING LOGIC -->
+    <script>
+        /************************************************************************
+         * 🛠️ INLINE EDITING ENGINE (Visual Direct Text Editor)
+         ************************************************************************/
+        function enableInlineEditing() {
+            document.querySelectorAll('[data-localize]').forEach(el => {
+                el.setAttribute('contenteditable', 'true');
+                el.addEventListener('blur', handleInlineEditBlur);
+            });
+        }
+
+        function disableInlineEditing() {
+            document.querySelectorAll('[data-localize]').forEach(el => {
+                el.removeAttribute('contenteditable');
+                el.removeEventListener('blur', handleInlineEditBlur);
+            });
+        }
+
+        function handleInlineEditBlur(event) {
+            const el = event.target;
+            const key = el.getAttribute('data-localize');
+            const newValue = el.innerHTML.trim();
+
+            if (TRANVAL = TRANSLATIONS[currentLang] && TRANSLATIONS[currentLang][key]) {
+                // Update local dictionary and save
+                TRANSLATIONS[currentLang][key] = newValue;
+                saveCustomTranslation(currentLang, key, newValue);
+            }
+        }
+
+        /************************************************************************
+         * 🎛️ MODULAR LAYOUT ENGINE (Section Reordering)
+         ************************************************************************/
+        const DEFAULT_LAYOUT = ['hero', 'work', 'about', 'skills', 'contact'];
+        let LAYOUT_CONFIG = [];
+
+        function initLayoutConfig() {
+            const savedLayout = localStorage.getItem('vinzpro_layout_config');
+            if (savedLayout) {
+                try {
+                    LAYOUT_CONFIG = JSON.parse(savedLayout);
+                } catch (e) {
+                    LAYOUT_CONFIG = getDefaultLayoutConfig();
+                }
+            } else {
+                LAYOUT_CONFIG = getDefaultLayoutConfig();
+                saveLayoutConfig();
+            }
+            applyLayoutConfig();
+        }
+
+        function getDefaultLayoutConfig() {
+            return DEFAULT_LAYOUT.map((id, index) => ({
+                id: id,
+                order: index,
+                visible: true,
+                name_id: getSectionName(id, 'id'),
+                name_en: getSectionName(id, 'en')
+            }));
+        }
+
+        function getSectionName(id, lang) {
+            const names = {
+                hero: { id: "Utama (Hero)", en: "Home (Hero)" },
+                work: { id: "Portofolio Karya", en: "Portfolio Gallery" },
+                about: { id: "Profil & Riwayat Kerja", en: "Profile & History" },
+                skills: { id: "Keahlian & Prestasi", en: "Skills & Achievements" },
+                contact: { id: "Hubungi Hub", en: "Contact Segment" }
+            };
+            return names[id] ? names[id][lang] : id;
+        }
+
+        function saveLayoutConfig() {
+            localStorage.setItem('vinzpro_layout_config', JSON.stringify(LAYOUT_CONFIG));
+        }
+
+        function applyLayoutConfig() {
+            const container = document.getElementById('mainContainer');
+
+            // Sort layout configurations by order
+            LAYOUT_CONFIG.sort((a, b) => a.order - b.order);
+
+            // Reappend elements in sorted order
+            LAYOUT_CONFIG.forEach(sec => {
+                const el = document.getElementById(sec.id);
+                if (el) {
+                    container.appendChild(el);
+                    if (sec.visible) {
+                        el.classList.remove('hidden');
+                    } else {
+                        el.classList.add('hidden');
+                    }
+                }
+            });
+        }
+
+        // Modal Layout Controls
+        const layoutManagerModal = document.getElementById('layoutManagerModal');
+        const layoutSectionsList = document.getElementById('layoutSectionsList');
+
+        function openLayoutManagerModal() {
+            if (!isAdminActive) return;
+            renderLayoutManagerList();
+            layoutManagerModal.classList.remove('hidden');
+            setTimeout(() => {
+                layoutManagerModal.classList.add('opacity-100');
+            }, 50);
+        }
+
+        function closeLayoutManagerModal() {
+            layoutManagerModal.classList.remove('opacity-100');
+            setTimeout(() => {
+                layoutManagerModal.classList.add('hidden');
+            }, 300);
+        }
+
+        function renderLayoutManagerList() {
+            layoutSectionsList.innerHTML = '';
+            LAYOUT_CONFIG.forEach((sec, idx) => {
+                const item = document.createElement('div');
+                item.className = "flex items-center justify-between p-3.5 rounded-xl bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 text-sm";
+
+                const currentName = currentLang === 'id' ? sec.name_id : sec.name_en;
+                const visibilityIcon = sec.visible ? '👁' : '👁‍🗨';
+                const visibilityClass = sec.visible ? 'text-emerald-500' : 'text-zinc-400';
+
+                item.innerHTML = `
+                    <span class="font-medium truncate max-w-[180px]">${currentName}</span>
+                    <div class="flex items-center gap-2">
+                        <!-- Move Up -->
+                        <button onclick="moveSection(${idx}, -1)" class="p-1.5 rounded hover:bg-black/10 dark:hover:bg-white/10 ${idx === 0 ? 'opacity-30 cursor-not-allowed' : ''}" ${idx === 0 ? 'disabled' : ''}>
+                            ▲
+                        </button>
+                        <!-- Move Down -->
+                        <button onclick="moveSection(${idx}, 1)" class="p-1.5 rounded hover:bg-black/10 dark:hover:bg-white/10 ${idx === LAYOUT_CONFIG.length - 1 ? 'opacity-30 cursor-not-allowed' : ''}" ${idx === LAYOUT_CONFIG.length - 1 ? 'disabled' : ''}>
+                            ▼
+                        </button>
+                        <!-- Hide/Show Toggle -->
+                        <button onclick="toggleSectionVisibility(${idx})" class="p-1.5 rounded hover:bg-black/10 dark:hover:bg-white/10 ${visibilityClass} font-bold">
+                            ${visibilityIcon}
+                        </button>
+                    </div>
+                `;
+                layoutSectionsList.appendChild(item);
+            });
+        }
+
+        function moveSection(index, direction) {
+            const targetIndex = index + direction;
+            if (targetIndex < 0 || targetIndex >= LAYOUT_CONFIG.length) return;
+
+            // Swap orders
+            const temp = LAYOUT_CONFIG[index].order;
+            LAYOUT_CONFIG[index].order = LAYOUT_CONFIG[targetIndex].order;
+            LAYOUT_CONFIG[targetIndex].order = temp;
+
+            saveLayoutConfig();
+            initLayoutConfig();
+            renderLayoutManagerList();
+            showToast("Tata letak layout diperbarui!");
+        }
+
+        function toggleSectionVisibility(index) {
+            LAYOUT_CONFIG[index].visible = !LAYOUT_CONFIG[index].visible;
+            saveLayoutConfig();
+            initLayoutConfig();
+            renderLayoutManagerList();
+            showToast(`${LAYOUT_CONFIG[index].name_en} diperbarui visibility-nya!`);
+        }
+
+        /************************************************************************
+         * 💬 MOBILE HAMBURGER MENU ENGINE (Apple-Style Dropdown Overlay)
+         ************************************************************************/
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+        let isMobileMenuOpen = false;
+
+        mobileMenuBtn.addEventListener('click', () => {
+            if (isMobileMenuOpen) {
+                closeMobileMenu();
+            } else {
+                openMobileMenu();
+            }
+        });
+
+        function openMobileMenu() {
+            isMobileMenuOpen = true;
+            mobileMenuBtn.classList.add('menu-open');
+            mobileMenuOverlay.classList.remove('pointer-events-none');
+            mobileMenuOverlay.classList.add('opacity-100');
+            mobileMenuOverlay.style.transform = "translateY(0%)";
+        }
+
+        function closeMobileMenu() {
+            isMobileMenuOpen = false;
+            mobileMenuBtn.classList.remove('menu-open');
+            mobileMenuOverlay.classList.add('pointer-events-none');
+            mobileMenuOverlay.style.transform = "translateY(-100%)";
+            mobileMenuOverlay.classList.remove('opacity-100');
+        }
+
+        /************************************************************************
+         * 💬 MOBILE ONCHANGE DEFAULT ATTACHMENT
+         ************************************************************************/
+        document.addEventListener('DOMContentLoaded', () => {
+            handleMediaTypeChange();
+        });
+
+        /************************************************************************
+         * 💬 IO-STYLE FLOATING TOAST SYSTEM
+         ************************************************************************/
+        function showToast(message) {
+            const toast = document.getElementById('toastNotification');
+            const toastText = document.getElementById('toastText');
+            toastText.textContent = message;
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+                toast.classList.remove('translate-y-0', 'opacity-100');
+            }, 3000);
+        }
+
+        /************************************************************************
+         * 🚀 WINDOW ONLOAD SYSTEM INITIALIZATION
+         ************************************************************************/
+        window.onload = function () {
+            loadCustomTranslations();
+            initProjectsData();
+            initLayoutConfig();
+            checkAdminSession();
+            applyTranslations();
+            renderProjects();
+            resizeCanvas();
+            initCosmos();
+            animateCosmos();
+        }
+    </script>
+</body>
+
+</html>
