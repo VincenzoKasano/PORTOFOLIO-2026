@@ -688,11 +688,14 @@
             </div>
 
             <div class="p-6 md:p-8 overflow-y-auto border-t border-black/[0.05] dark:border-white/[0.05]">
-                <div class="flex items-center gap-2 mb-2">
+                <div class="flex items-center gap-2 mb-2 relative">
                     <span id="modalCategory"
                         class="text-xs font-semibold text-blue-500 uppercase tracking-widest">Kategori</span>
                     <span id="modalSourceBadge"
                         class="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider bg-black/10 dark:bg-white/10">Drive</span>
+                    <span id="modalViews" class="text-xs text-zinc-400 dark:text-zinc-500 ml-auto flex items-center gap-1 font-medium" title="Jumlah tayangan">
+                        👁️ <span>0</span> views
+                    </span>
                 </div>
                 <h3 id="modalTitle" class="text-xl md:text-2xl font-bold tracking-tight mb-3">Judul Proyek</h3>
                 <p id="modalDesc"
@@ -1356,7 +1359,8 @@
                 imageUrl: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=800&q=70",
                 videoUrl: "https://www.youtube.com/watch?v=SshsX6A_b8w",
                 mediaType: "youtube",
-                isFeatured: true
+                isFeatured: true,
+                views: 12480
             },
             {
                 id: 2,
@@ -1369,7 +1373,8 @@
                 imageUrl: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=800&q=70",
                 videoUrl: "https://www.youtube.com/watch?v=8vB87kQ2g9w",
                 mediaType: "youtube",
-                isFeatured: false
+                isFeatured: false,
+                views: 3150
             },
             {
                 id: 3,
@@ -1382,7 +1387,8 @@
                 imageUrl: "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&w=800&q=70",
                 videoUrl: "https://www.youtube.com/watch?v=hlyZ-GjVshM",
                 mediaType: "youtube",
-                isFeatured: true
+                isFeatured: true,
+                views: 2470
             },
             {
                 id: 4,
@@ -1395,7 +1401,8 @@
                 imageUrl: "https://images.unsplash.com/photo-1497034825429-c343d7c6a68f?auto=format&fit=crop&w=800&q=70",
                 videoUrl: "https://www.youtube.com/watch?v=6_9oOInX9rI",
                 mediaType: "youtube",
-                isFeatured: false
+                isFeatured: false,
+                views: 890
             }
         ];
 
@@ -1422,6 +1429,7 @@
                             videoUrl: data.videoUrl || "",
                             mediaType: data.mediaType || "image",
                             isFeatured: data.isFeatured || false,
+                            views: data.views || 0,
                             createdAt: data.createdAt
                         });
                     });
@@ -1476,6 +1484,7 @@
                     videoUrl: proj.videoUrl,
                     mediaType: proj.mediaType,
                     isFeatured: proj.isFeatured,
+                    views: proj.views || 0,
                     createdAt: Date.now() - index * 1000
                 };
                 return db.collection("projects").doc(docId).set(docData);
@@ -1960,7 +1969,12 @@
                         </div>
                     </div>
                     <div class="p-6 md:p-8 relative font-sans">
-                        <span class="text-xs font-semibold text-blue-500 uppercase tracking-widest">${currentCategory}</span>
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-xs font-semibold text-blue-500 uppercase tracking-widest">${currentCategory}</span>
+                            <span class="text-[11px] text-zinc-400 dark:text-zinc-500 flex items-center gap-1 font-mono">
+                                👁️ ${(project.views || 0).toLocaleString()}
+                            </span>
+                        </div>
                         <h3 class="text-xl md:text-2xl font-bold tracking-tight mt-1 mb-3 group-hover:text-blue-500 transition-colors">${currentTitle}</h3>
                         <p class="text-black/60 dark:text-zinc-400 font-light text-sm leading-relaxed line-clamp-2 pr-10">${currentDesc}</p>
                         ${adminButtonsHtml}
@@ -1991,9 +2005,28 @@
             }
         }
 
+        function incrementProjectViews(id) {
+            const idStr = String(id);
+            if (isFirebaseActive) {
+                db.collection("projects").doc(idStr).update({
+                    views: firebase.firestore.FieldValue.increment(1)
+                }).catch(err => console.error("Gagal menaikkan views:", err));
+            } else {
+                const idx = MY_PROJECTS.findIndex(p => String(p.id) === idStr);
+                if (idx !== -1) {
+                    MY_PROJECTS[idx].views = (MY_PROJECTS[idx].views || 0) + 1;
+                    saveProjectsToStorage();
+                    renderProjects();
+                }
+            }
+        }
+
         function openProjectDetails(id) {
             const project = MY_PROJECTS.find(p => p.id === id);
             if (!project) return;
+
+            // Naikkan views counter
+            incrementProjectViews(id);
 
             // Bersihkan frame modal
             modalVideo.classList.add('hidden');
@@ -2052,6 +2085,10 @@
             modalTitle.textContent = currentTitle;
             modalCategory.textContent = currentCategory;
             modalDesc.textContent = currentDesc;
+
+            // Tampilkan jumlah views terbaru di modal
+            const currentViews = (project.views || 0) + 1;
+            document.getElementById('modalViews').querySelector('span').textContent = currentViews.toLocaleString();
 
             mediaModal.classList.remove('hidden');
             setTimeout(() => {
@@ -2204,6 +2241,7 @@
                     videoUrl,
                     mediaType,
                     isFeatured: false,
+                    views: 0,
                     createdAt: Date.now()
                 };
 
