@@ -1379,6 +1379,7 @@
             if (isFirebaseActive) {
                 // Gunakan listener real-time dari Firestore
                 db.collection("projects").orderBy("createdAt", "desc").onSnapshot((querySnapshot) => {
+                    isFirestoreEmpty = querySnapshot.empty;
                     MY_PROJECTS = [];
                     querySnapshot.forEach((doc) => {
                         const data = doc.data();
@@ -1469,6 +1470,7 @@
             password: "admin123"
         };
         let isAdminActive = false;
+        let isFirestoreEmpty = false; // Flag untuk mendeteksi database Firestore kosong
 
         function checkAdminSession() {
             if (isFirebaseActive) {
@@ -1476,6 +1478,11 @@
                     isAdminActive = !!user;
                     updateAdminUIState();
                     renderProjects();
+
+                    // Jika admin login dan Firestore kosong, unggah data default secara online agar memiliki ID dokumen Firestore yang valid
+                    if (isAdminActive && isFirestoreEmpty) {
+                        seedDefaultProjects();
+                    }
                 });
             } else {
                 isAdminActive = sessionStorage.getItem('vinz_is_admin') === 'true';
