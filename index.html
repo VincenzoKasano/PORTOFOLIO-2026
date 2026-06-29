@@ -630,8 +630,13 @@
                 <div>
                     <label class="block text-left text-xs font-semibold text-black/60 dark:text-zinc-400 mb-1.5 pl-1"
                         data-localize="login_pass_lbl">Password</label>
-                    <input type="password" id="loginPassword" required placeholder="••••••••"
-                        class="w-full px-3.5 py-2.5 text-sm bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                    <div class="relative">
+                        <input type="password" id="loginPassword" required placeholder="••••••••"
+                            class="w-full pl-3.5 pr-10 py-2.5 text-sm bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                        <button type="button" id="togglePasswordBtn" onclick="togglePasswordVisibility()" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-sm opacity-60 hover:opacity-100 transition-opacity focus:outline-none" title="Lihat Password">
+                            👁️
+                        </button>
+                    </div>
                 </div>
 
                 <div
@@ -1542,6 +1547,9 @@
         function openAdminLoginModal() {
             loginEmailInput.value = "";
             loginPasswordInput.value = "";
+            loginPasswordInput.type = "password";
+            const toggleBtn = document.getElementById('togglePasswordBtn');
+            if (toggleBtn) toggleBtn.textContent = '👁️';
             loginErrorMessage.textContent = "";
             loginErrorMessage.classList.add('opacity-0');
             adminLoginModal.classList.remove('hidden');
@@ -1556,6 +1564,18 @@
             setTimeout(() => {
                 adminLoginModal.classList.add('hidden');
             }, 300);
+        }
+
+        function togglePasswordVisibility() {
+            const passInput = document.getElementById('loginPassword');
+            const toggleBtn = document.getElementById('togglePasswordBtn');
+            if (passInput.type === 'password') {
+                passInput.type = 'text';
+                toggleBtn.textContent = '🙈';
+            } else {
+                passInput.type = 'password';
+                toggleBtn.textContent = '👁️';
+            }
         }
 
         function handleAdminLogin(event) {
