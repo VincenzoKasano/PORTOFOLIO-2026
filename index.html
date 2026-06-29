@@ -1398,9 +1398,14 @@
                         });
                     });
 
-                    // Jika database kosong, isi dengan data default
+                    // Jika database kosong, isi dengan data default secara lokal sebagai fallback.
+                    // Hanya lakukan seeding online ke Firestore jika admin aktif untuk menghindari permission loop error.
                     if (MY_PROJECTS.length === 0) {
-                        seedDefaultProjects();
+                        MY_PROJECTS = [...DEFAULT_PROJECTS];
+                        renderProjects();
+                        if (isAdminActive) {
+                            seedDefaultProjects();
+                        }
                     } else {
                         renderProjects();
                     }
