@@ -353,6 +353,43 @@
             </div>
         </section>
 
+        <!-- SEKSI 2: KLIEN & MITRA KAMI -->
+        <section id="clients"
+            class="py-20 max-w-6xl mx-auto px-6 border-t border-black/[0.04] dark:border-white/[0.04] w-full">
+            <div class="text-center max-w-3xl mx-auto mb-16 reveal reveal-up">
+                <span class="text-sm font-semibold text-blue-500 uppercase tracking-widest"
+                    data-localize="clients_subtitle">Kepercayaan Klien</span>
+                <h2 class="text-3xl md:text-5xl font-bold tracking-tight mt-2 text-[#1d1d1f] dark:text-[#f5f5f7]" data-localize="clients_title">Klien & Mitra Kerja</h2>
+                <p class="text-black/60 dark:text-zinc-400 font-light text-sm md:text-base mt-4 text-justify md:text-center" data-localize="clients_desc">
+                    Telah dipercaya oleh berbagai perusahaan dan lembaga berskala nasional maupun internasional untuk memproduksi aset visual premium.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Box Klien Internasional -->
+                <div class="bg-white/40 dark:bg-white/[0.01] border border-black/[0.05] dark:border-white/[0.03] p-6 md:p-8 rounded-3xl backdrop-blur-xl flex flex-col justify-between reveal reveal-up">
+                    <div class="mb-6">
+                        <span class="text-xs font-bold text-blue-500 uppercase tracking-widest block mb-2" data-localize="clients_lbl_intl">Kemitraan Global</span>
+                        <h3 class="text-xl md:text-2xl font-bold text-[#1d1d1f] dark:text-[#f5f5f7]" data-localize="clients_title_intl">Klien Internasional</h3>
+                    </div>
+                    <div class="bg-white rounded-2xl p-6 flex items-center justify-center shadow-inner min-h-[220px]">
+                        <img src="./clients_intl.png" alt="International Clients" class="max-w-full max-h-[160px] object-contain hover:scale-105 transition-transform duration-300">
+                    </div>
+                </div>
+
+                <!-- Box Klien Nasional & Lokal -->
+                <div class="bg-white/40 dark:bg-white/[0.01] border border-black/[0.05] dark:border-white/[0.03] p-6 md:p-8 rounded-3xl backdrop-blur-xl flex flex-col justify-between reveal reveal-up delay-100">
+                    <div class="mb-6">
+                        <span class="text-xs font-bold text-emerald-500 uppercase tracking-widest block mb-2" data-localize="clients_lbl_local">Kemitraan Nasional</span>
+                        <h3 class="text-xl md:text-2xl font-bold text-[#1d1d1f] dark:text-[#f5f5f7]" data-localize="clients_title_local">Klien Lokal & Nasional</h3>
+                    </div>
+                    <div class="bg-white rounded-2xl p-6 flex items-center justify-center shadow-inner min-h-[220px]">
+                        <img src="./clients_local.png" alt="Local & National Clients" class="max-w-full max-h-[160px] object-contain hover:scale-105 transition-transform duration-300">
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- SEKSI 3: GALERI KARYA / PORTOFOLIO -->
         <section id="work"
             class="py-24 max-w-6xl mx-auto px-6 border-t border-black/[0.04] dark:border-white/[0.04] w-full">
@@ -954,6 +991,13 @@
                 admin_mode_notice: "🔒 Mode Admin Aktif — Anda memiliki akses penuh untuk menambah, merubah, & mengatur susunan halaman.",
                 btn_explore: "Eksplor Portofolio",
                 btn_cv: "Detail Riwayat Hidup (CV)",
+                clients_subtitle: "Kepercayaan Klien",
+                clients_title: "Klien & Mitra Kerja",
+                clients_desc: "Telah dipercaya oleh berbagai perusahaan dan lembaga berskala nasional maupun internasional untuk memproduksi aset visual premium.",
+                clients_lbl_intl: "Kemitraan Global",
+                clients_title_intl: "Klien Internasional",
+                clients_lbl_local: "Kemitraan Nasional",
+                clients_title_local: "Klien Lokal & Nasional",
                 work_subtitle: "Galeri Kreatif Pilihan",
                 work_title: "Karya Multimedia",
                 btn_add_work: "Tambah Karya Baru (Live UI)",
@@ -1027,6 +1071,13 @@
                 admin_mode_notice: "🔒 Admin Mode Active — You have full authorization to edit, insert & reorder layout sections.",
                 btn_explore: "Explore Portfolio",
                 btn_cv: "Detailed Resume (CV)",
+                clients_subtitle: "Client Trust",
+                clients_title: "Clients & Partners",
+                clients_desc: "Trusted by various national and international companies and institutions to produce premium visual assets.",
+                clients_lbl_intl: "Global Partnerships",
+                clients_title_intl: "International Clients",
+                clients_lbl_local: "National Partnerships",
+                clients_title_local: "Local & National Clients",
                 work_subtitle: "Featured Creative Gallery",
                 work_title: "Multimedia Projects",
                 btn_add_work: "Add New Project (Live UI)",
@@ -2750,7 +2801,7 @@
         /************************************************************************
          * 🎛️ MODULAR LAYOUT ENGINE (Section Reordering)
          ************************************************************************/
-        const DEFAULT_LAYOUT = ['hero', 'work', 'about', 'skills', 'contact'];
+        const DEFAULT_LAYOUT = ['hero', 'clients', 'work', 'about', 'skills', 'contact'];
         let LAYOUT_CONFIG = [];
 
         function initLayoutConfig() {
@@ -2758,6 +2809,18 @@
             if (savedLayout) {
                 try {
                     LAYOUT_CONFIG = JSON.parse(savedLayout);
+                    // Migrasi: tambahkan seksi baru jika tidak ada di konfigurasi tersimpan
+                    DEFAULT_LAYOUT.forEach((id, index) => {
+                        if (!LAYOUT_CONFIG.some(sec => sec.id === id)) {
+                            LAYOUT_CONFIG.push({
+                                id: id,
+                                order: LAYOUT_CONFIG.length,
+                                visible: true,
+                                name_id: getSectionName(id, 'id'),
+                                name_en: getSectionName(id, 'en')
+                            });
+                        }
+                    });
                 } catch (e) {
                     LAYOUT_CONFIG = getDefaultLayoutConfig();
                 }
@@ -2781,6 +2844,7 @@
         function getSectionName(id, lang) {
             const names = {
                 hero: { id: "Utama (Hero)", en: "Home (Hero)" },
+                clients: { id: "Klien & Mitra", en: "Clients & Partners" },
                 work: { id: "Portofolio Karya", en: "Portfolio Gallery" },
                 about: { id: "Profil & Riwayat Kerja", en: "Profile & History" },
                 skills: { id: "Keahlian & Prestasi", en: "Skills & Achievements" },
