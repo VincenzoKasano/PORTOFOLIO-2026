@@ -1799,10 +1799,10 @@
                                 <div class="space-y-1.5 bg-black/5 dark:bg-white/5 rounded-xl p-3 border border-black/5 dark:border-white/5">
                                     <div class="flex items-center justify-between text-[10px] font-semibold">
                                         <span class="text-blue-500 animate-pulse">Mengunggah ke Cloud...</span>
-                                        <span class="font-mono text-zinc-500">${media.progress || 0}%</span>
+                                        <span id="upload-progress-text-${idx}" class="font-mono text-zinc-500">${media.progress || 0}%</span>
                                     </div>
                                     <div class="w-full bg-black/10 dark:bg-white/10 rounded-full h-1.5 overflow-hidden">
-                                        <div class="bg-blue-500 h-full rounded-full transition-all duration-300" style="width: ${media.progress || 0}%"></div>
+                                        <div id="upload-progress-bar-${idx}" class="bg-blue-500 h-full rounded-full transition-all duration-300" style="width: ${media.progress || 0}%"></div>
                                     </div>
                                 </div>
                             ` : ''}
@@ -2030,7 +2030,14 @@
                     (snapshot) => {
                         const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
                         currentFormMedia[index].progress = progress;
-                        renderMediaRows();
+                        const textEl = document.getElementById(`upload-progress-text-${index}`);
+                        const barEl = document.getElementById(`upload-progress-bar-${index}`);
+                        if (textEl && barEl) {
+                            textEl.textContent = `${progress}%`;
+                            barEl.style.width = `${progress}%`;
+                        } else {
+                            renderMediaRows();
+                        }
                     }, 
                     (error) => {
                         console.error("Gagal unggah gambar ke Firebase:", error);
@@ -2063,7 +2070,14 @@
                     (snapshot) => {
                         const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
                         currentFormMedia[index].progress = progress;
-                        renderMediaRows();
+                        const textEl = document.getElementById(`upload-progress-text-${index}`);
+                        const barEl = document.getElementById(`upload-progress-bar-${index}`);
+                        if (textEl && barEl) {
+                            textEl.textContent = `${progress}%`;
+                            barEl.style.width = `${progress}%`;
+                        } else {
+                            renderMediaRows();
+                        }
                     }, 
                     (error) => {
                         console.error("Gagal unggah video ke Firebase:", error);
