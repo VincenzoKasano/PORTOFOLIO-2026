@@ -912,6 +912,9 @@
             measurementId: "G-9MDM4VKYND"
         };
 
+        // API Key ImgBB untuk unggahan gambar super cepat (Dapatkan gratis di https://api.imgbb.com/)
+        const imgbbApiKey = "YOUR_IMGBB_API_KEY_HERE";
+
         // Inisialisasi Firebase jika config telah diisi
         let db = null;
         let auth = null;
@@ -1974,7 +1977,9 @@
                         ctx.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, targetWidth, targetHeight);
                         const webpBase64 = canvas.toDataURL('image/webp', 0.75);
 
-                        if (isFirebaseActive) {
+                        if (imgbbApiKey && imgbbApiKey !== "YOUR_IMGBB_API_KEY_HERE" && imgbbApiKey !== "") {
+                            uploadBlobToImgBB(index, webpBase64);
+                        } else if (isFirebaseActive) {
                             uploadBlobToFirebaseStorage(index, webpBase64, `projects/images_${Date.now()}.webp`);
                         } else {
                             currentFormMedia[index].url = webpBase64;
@@ -2018,6 +2023,81 @@
                 u8arr[n] = bstr.charCodeAt(n);
             }
             return new Blob([u8arr], {type:mime});
+        }
+
+        function uploadBlobToImgBB(index, base64Data) {
+            if (!imgbbApiKey || imgbbApiKey === "YOUR_IMGBB_API_KEY_HERE" || imgbbApiKey === "") {
+                showToast("API Key ImgBB belum dikonfigurasi!");
+                currentFormMedia[index].status = 'error';
+                currentFormMedia[index].progress = 0;
+                renderMediaRows();
+                return;
+            }
+
+            try {
+                const blob = dataURLtoBlob(base64Data);
+                const formData = new FormData();
+                formData.append('image', blob, `image_${Date.now()}.webp`);
+
+                const xhr = new XMLHttpRequest();
+                
+                xhr.upload.addEventListener('progress', (e) => {
+                    if (e.lengthComputable) {
+                        const progress = Math.round((e.loaded / e.total) * 100);
+                        currentFormMedia[index].progress = progress;
+                        
+                        const textEl = document.getElementById(`upload-progress-text-${index}`);
+                        const barEl = document.getElementById(`upload-progress-bar-${index}`);
+                        if (textEl && barEl) {
+                            textEl.textContent = `${progress}%`;
+                            barEl.style.width = `${progress}%`;
+                        } else {
+                            renderMediaRows();
+                        }
+                    }
+                });
+
+                xhr.addEventListener('load', () => {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            if (response.success) {
+                                const downloadURL = response.data.url;
+                                currentFormMedia[index].url = downloadURL;
+                                currentFormMedia[index].status = 'complete';
+                                currentFormMedia[index].progress = 100;
+                                renderMediaRows();
+                                showToast("Gambar berhasil diunggah ke ImgBB CDN!");
+                            } else {
+                                throw new Error(response.error ? response.error.message : 'Unknown error');
+                            }
+                        } catch (err) {
+                            console.error("Gagal parse response ImgBB:", err);
+                            handleImgBBError(index);
+                        }
+                    } else {
+                        handleImgBBError(index);
+                    }
+                });
+
+                xhr.addEventListener('error', () => {
+                    handleImgBBError(index);
+                });
+
+                xhr.open('POST', `https://api.imgbb.com/1/upload?key=${imgbbApiKey}`);
+                xhr.send(formData);
+
+            } catch (e) {
+                console.error("Kesalahan upload ImgBB:", e);
+                handleImgBBError(index);
+            }
+        }
+
+        function handleImgBBError(index) {
+            currentFormMedia[index].status = 'error';
+            currentFormMedia[index].progress = 0;
+            renderMediaRows();
+            showToast("Gagal mengunggah gambar ke ImgBB. Periksa koneksi atau API Key Anda!");
         }
 
         function uploadBlobToFirebaseStorage(index, base64Data, path) {
