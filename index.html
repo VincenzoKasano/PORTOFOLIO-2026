@@ -410,6 +410,13 @@
                         </svg>
                         <span data-localize="btn_add_work">Tambah Karya Baru (Live UI)</span>
                     </button>
+                    <button onclick="openProjectLayoutModal()"
+                        class="flex items-center gap-2 text-xs bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 py-2.5 px-4 rounded-full hover:bg-indigo-500/20 transition-all font-medium active:scale-95">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"></path>
+                        </svg>
+                        <span>Atur Tata Letak Proyek</span>
+                    </button>
                     <button onclick="openLayoutManagerModal()"
                         class="flex items-center gap-2 text-xs bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 py-2.5 px-4 rounded-full hover:bg-purple-500/20 transition-all font-medium active:scale-95">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -920,6 +927,65 @@
             </div>
 
             <button onclick="closeLayoutManagerModal()"
+                class="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-xl transition-all active:scale-95 shadow-md">
+                Selesai Atur Tata Letak
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL PROJECT LAYOUT & REORDER MANAGER -->
+    <div id="projectLayoutModal"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden transition-opacity duration-300 opacity-0">
+        <div
+            class="relative w-full max-w-lg bg-[#f5f5f7] dark:bg-[#121212] border border-black/10 dark:border-white/10 p-8 rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh] overflow-y-auto">
+            <button onclick="closeProjectLayoutModal()"
+                class="absolute top-4 right-4 text-black dark:text-white hover:opacity-70" aria-label="Tutup">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                    </path>
+                </svg>
+            </button>
+
+            <h3 class="text-2xl font-bold tracking-tight mb-2">Atur Tata Letak Proyek</h3>
+            <p class="text-sm text-black/60 dark:text-zinc-400 mb-6">Sesuaikan urutan tampil, tipe layout grid, jumlah kolom, dan status popularitas proyek secara real-time.</p>
+
+            <!-- Tipe Tampilan & Kolom -->
+            <div class="space-y-4 mb-6 pb-6 border-b border-black/10 dark:border-white/10">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-blue-500 mb-2">Gaya Tampilan (Style)</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button onclick="updateProjectStyleSetting('grid')" id="btnStyleGrid" class="py-2.5 px-3 text-xs font-semibold rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-zinc-900 transition-all hover:bg-black/5 dark:hover:bg-white/5 active:scale-95 flex flex-col items-center gap-1">
+                            <span>Grid Standar</span>
+                        </button>
+                        <button onclick="updateProjectStyleSetting('bento')" id="btnStyleBento" class="py-2.5 px-3 text-xs font-semibold rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-zinc-900 transition-all hover:bg-black/5 dark:hover:bg-white/5 active:scale-95 flex flex-col items-center gap-1">
+                            <span>Bento Grid</span>
+                        </button>
+                        <button onclick="updateProjectStyleSetting('slider')" id="btnStyleSlider" class="py-2.5 px-3 text-xs font-semibold rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-zinc-900 transition-all hover:bg-black/5 dark:hover:bg-white/5 active:scale-95 flex flex-col items-center gap-1">
+                            <span>Slider Carousel</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="colSettingsContainer">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-blue-500 mb-2">Jumlah Kolom (Untuk Grid Standar)</label>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button onclick="updateProjectColSetting(1)" id="btnCol1" class="py-2 px-3 text-xs font-semibold rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-zinc-900 transition-all hover:bg-black/5 dark:hover:bg-white/5 active:scale-95">1 Kolom</button>
+                        <button onclick="updateProjectColSetting(2)" id="btnCol2" class="py-2 px-3 text-xs font-semibold rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-zinc-900 transition-all hover:bg-black/5 dark:hover:bg-white/5 active:scale-95">2 Kolom</button>
+                        <button onclick="updateProjectColSetting(3)" id="btnCol3" class="py-2 px-3 text-xs font-semibold rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-zinc-900 transition-all hover:bg-black/5 dark:hover:bg-white/5 active:scale-95">3 Kolom</button>
+                        <button onclick="updateProjectColSetting(4)" id="btnCol4" class="py-2 px-3 text-xs font-semibold rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-zinc-900 transition-all hover:bg-black/5 dark:hover:bg-white/5 active:scale-95">4 Kolom</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- List Proyek untuk diurutkan -->
+            <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-blue-500 mb-3">Urutan Proyek (Tarik/Gunakan Tombol Panah)</label>
+                <div id="projectLayoutList" class="space-y-2 max-h-[40vh] overflow-y-auto pr-1">
+                    <!-- Dinonaktifkan atau dirender secara dinamis lewat JS -->
+                </div>
+            </div>
+
+            <button onclick="closeProjectLayoutModal()"
                 class="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-xl transition-all active:scale-95 shadow-md">
                 Selesai Atur Tata Letak
             </button>
@@ -1505,7 +1571,8 @@
                             mediaList: data.mediaList || [],
                             isFeatured: data.isFeatured || false,
                             views: data.views || 0,
-                            createdAt: data.createdAt
+                            createdAt: data.createdAt,
+                            order: data.order !== undefined ? data.order : 0
                         });
                     });
 
@@ -2237,14 +2304,59 @@
         function renderProjects() {
             projectsGrid.innerHTML = '';
 
+            // Sort projects: custom order ascending, then createdAt descending fallback
+            MY_PROJECTS.sort((a, b) => {
+                const aOrder = a.order !== undefined ? a.order : 0;
+                const bOrder = b.order !== undefined ? b.order : 0;
+                if (aOrder !== bOrder) return aOrder - bOrder;
+                return (b.createdAt || 0) - (a.createdAt || 0);
+            });
+
+            // Apply layout styles and columns configuration
+            let gridColClass = "grid-cols-1 md:grid-cols-2 gap-8"; // default
+            
+            if (typeof PROJECTS_LAYOUT_CONFIG !== 'undefined') {
+                if (PROJECTS_LAYOUT_CONFIG.style === 'slider') {
+                    projectsGrid.className = "flex overflow-x-auto gap-6 pb-6 scrollbar-thin snap-x snap-mandatory w-full max-w-full";
+                } else if (PROJECTS_LAYOUT_CONFIG.style === 'bento') {
+                    projectsGrid.className = "grid grid-cols-1 md:grid-cols-3 gap-6 w-full";
+                } else {
+                    // grid style
+                    if (PROJECTS_LAYOUT_CONFIG.columns === 1) {
+                        gridColClass = "grid-cols-1 gap-8 max-w-2xl mx-auto";
+                    } else if (PROJECTS_LAYOUT_CONFIG.columns === 3) {
+                        gridColClass = "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6";
+                    } else if (PROJECTS_LAYOUT_CONFIG.columns === 4) {
+                        gridColClass = "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6";
+                    } else {
+                        gridColClass = "grid-cols-1 md:grid-cols-2 gap-8";
+                    }
+                    projectsGrid.className = `grid ${gridColClass} w-full`;
+                }
+            } else {
+                projectsGrid.className = "grid grid-cols-1 md:grid-cols-2 gap-8 w-full";
+            }
+
             MY_PROJECTS.forEach((project, index) => {
                 const cardWrapper = document.createElement('div');
                 const delayIndex = index % 4;
                 const delayClass = delayIndex > 0 ? `delay-${delayIndex * 100}` : '';
-                cardWrapper.className = `reveal reveal-up ${delayClass}`;
+                
+                // Adjust card sizes based on style
+                if (typeof PROJECTS_LAYOUT_CONFIG !== 'undefined') {
+                    if (PROJECTS_LAYOUT_CONFIG.style === 'slider') {
+                        cardWrapper.className = `reveal reveal-up ${delayClass} flex-shrink-0 w-80 md:w-[450px] snap-start`;
+                    } else if (PROJECTS_LAYOUT_CONFIG.style === 'bento' && project.isFeatured) {
+                        cardWrapper.className = `reveal reveal-up ${delayClass} md:col-span-2`;
+                    } else {
+                        cardWrapper.className = `reveal reveal-up ${delayClass}`;
+                    }
+                } else {
+                    cardWrapper.className = `reveal reveal-up ${delayClass}`;
+                }
 
                 const card = document.createElement('div');
-                card.className = "group relative bg-white/40 dark:bg-white/[0.01] border border-black/[0.06] dark:border-white/[0.03] rounded-3xl overflow-hidden backdrop-blur-md hover:border-black/15 dark:hover:border-white/15 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 cursor-pointer";
+                card.className = "group relative bg-white/40 dark:bg-white/[0.01] border border-black/[0.06] dark:border-white/[0.03] rounded-3xl overflow-hidden backdrop-blur-md hover:border-black/15 dark:hover:border-white/15 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 cursor-pointer h-full flex flex-col justify-between";
 
                 card.onclick = (e) => {
                     if (e.target.closest('.btn-delete-card') || e.target.closest('.btn-edit-card')) return;
@@ -2309,26 +2421,30 @@
                 const currentDesc = currentLang === 'id' ? project.description_id : project.description_en;
 
                 card.innerHTML = `
-                    <div class="aspect-video w-full overflow-hidden relative">
-                        ${badgeHtml}
-                        ${featuredBadge}
-                        <img src="${project.imageUrl}" alt="${currentTitle}" class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out" onerror="this.src='https://placehold.co/800x450/1d1d1f/ffffff?text=Karya+Terbaik'">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
-                            <span class="text-white text-xs font-semibold flex items-center gap-1">
-                                Klik untuk melihat detail & Putar media 
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                            </span>
+                    <div class="flex-grow flex flex-col justify-start">
+                        <div class="aspect-video w-full overflow-hidden relative">
+                            ${badgeHtml}
+                            ${featuredBadge}
+                            <img src="${project.imageUrl}" alt="${currentTitle}" class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out" onerror="this.src='https://placehold.co/800x450/1d1d1f/ffffff?text=Karya+Terbaik'">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
+                                <span class="text-white text-xs font-semibold flex items-center gap-1">
+                                    Klik untuk melihat detail & Putar media 
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="p-6 md:p-8 relative font-sans flex-grow">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="text-xs font-semibold text-blue-500 uppercase tracking-widest">${currentCategory}</span>
+                                <span class="text-[11px] text-zinc-400 dark:text-zinc-500 flex items-center gap-1 font-mono">
+                                    👁️ ${(project.views || 0).toLocaleString()}
+                                </span>
+                            </div>
+                            <h3 class="text-xl md:text-2xl font-bold tracking-tight mt-1 mb-3 group-hover:text-blue-500 transition-colors">${currentTitle}</h3>
+                            <p class="text-black/60 dark:text-zinc-400 font-light text-sm leading-relaxed line-clamp-2 pr-10 mb-6">${currentDesc}</p>
                         </div>
                     </div>
-                    <div class="p-6 md:p-8 relative font-sans">
-                        <div class="flex items-center justify-between mb-1">
-                            <span class="text-xs font-semibold text-blue-500 uppercase tracking-widest">${currentCategory}</span>
-                            <span class="text-[11px] text-zinc-400 dark:text-zinc-500 flex items-center gap-1 font-mono">
-                                👁️ ${(project.views || 0).toLocaleString()}
-                            </span>
-                        </div>
-                        <h3 class="text-xl md:text-2xl font-bold tracking-tight mt-1 mb-3 group-hover:text-blue-500 transition-colors">${currentTitle}</h3>
-                        <p class="text-black/60 dark:text-zinc-400 font-light text-sm leading-relaxed line-clamp-2 pr-10">${currentDesc}</p>
+                    <div class="h-14 relative w-full flex items-center justify-between px-6 pb-6">
                         ${adminButtonsHtml}
                     </div>
                 `;
@@ -2738,6 +2854,14 @@
                 projectData.views = 0;
                 projectData.createdAt = Date.now();
 
+                // Compute minOrder - 1 to make it go first
+                let minOrder = 0;
+                if (MY_PROJECTS.length > 0) {
+                    const orders = MY_PROJECTS.map(p => p.order !== undefined ? p.order : 0);
+                    minOrder = Math.min(...orders);
+                }
+                projectData.order = minOrder - 1;
+
                 if (isFirebaseActive) {
                     const docId = Date.now().toString();
                     db.collection("projects").doc(docId).set(projectData)
@@ -2952,6 +3076,255 @@
         }
 
         /************************************************************************
+         * 🎛️ PROJECTS LAYOUT & REORDER ENGINE
+         ************************************************************************/
+        let PROJECTS_LAYOUT_CONFIG = {
+            style: 'grid',    // grid, bento, slider
+            columns: 2        // 1, 2, 3, 4
+        };
+
+        function initProjectsLayoutConfig() {
+            if (isFirebaseActive) {
+                // Listen to layout config changes in real-time from Firestore settings/projects_layout
+                db.collection("settings").doc("projects_layout").onSnapshot((doc) => {
+                    if (doc.exists) {
+                        PROJECTS_LAYOUT_CONFIG = { ...PROJECTS_LAYOUT_CONFIG, ...doc.data() };
+                        updateProjectLayoutUIControls();
+                        renderProjects();
+                    } else {
+                        loadProjectsLayoutFromLocalStorage();
+                    }
+                }, (error) => {
+                    console.error("Gagal memuat setting layout proyek dari Firestore:", error);
+                    loadProjectsLayoutFromLocalStorage();
+                });
+            } else {
+                loadProjectsLayoutFromLocalStorage();
+            }
+        }
+
+        function loadProjectsLayoutFromLocalStorage() {
+            const saved = localStorage.getItem('vinzpro_projects_layout_config');
+            if (saved) {
+                try {
+                    PROJECTS_LAYOUT_CONFIG = JSON.parse(saved);
+                } catch (e) {
+                    console.error("Error loading project layout config", e);
+                }
+            }
+            updateProjectLayoutUIControls();
+            renderProjects();
+        }
+
+        function saveProjectsLayoutConfig(config) {
+            PROJECTS_LAYOUT_CONFIG = { ...PROJECTS_LAYOUT_CONFIG, ...config };
+            if (isFirebaseActive) {
+                db.collection("settings").doc("projects_layout").set(PROJECTS_LAYOUT_CONFIG)
+                    .then(() => {
+                        showToast("Pengaturan layout proyek disimpan!");
+                    })
+                    .catch((error) => {
+                        console.error("Gagal menyimpan layout proyek ke Firestore:", error);
+                        showToast("Gagal menyimpan ke cloud, disimpan secara lokal.");
+                        localStorage.setItem('vinzpro_projects_layout_config', JSON.stringify(PROJECTS_LAYOUT_CONFIG));
+                        renderProjects();
+                    });
+            } else {
+                localStorage.setItem('vinzpro_projects_layout_config', JSON.stringify(PROJECTS_LAYOUT_CONFIG));
+                showToast("Pengaturan layout proyek disimpan!");
+                renderProjects();
+            }
+            updateProjectLayoutUIControls();
+        }
+
+        function updateProjectLayoutUIControls() {
+            const styles = ['grid', 'bento', 'slider'];
+            styles.forEach(s => {
+                const btn = document.getElementById(`btnStyle${s.charAt(0).toUpperCase() + s.slice(1)}`);
+                if (btn) {
+                    if (PROJECTS_LAYOUT_CONFIG.style === s) {
+                        btn.classList.add('bg-blue-600', 'text-white', 'border-blue-600');
+                        btn.classList.remove('bg-white', 'dark:bg-zinc-900', 'text-black', 'dark:text-white');
+                    } else {
+                        btn.classList.remove('bg-blue-600', 'text-white', 'border-blue-600');
+                        btn.classList.add('bg-white', 'dark:bg-zinc-900');
+                    }
+                }
+            });
+
+            // Show/hide column settings
+            const colContainer = document.getElementById('colSettingsContainer');
+            if (colContainer) {
+                if (PROJECTS_LAYOUT_CONFIG.style === 'grid') {
+                    colContainer.classList.remove('hidden');
+                } else {
+                    colContainer.classList.add('hidden');
+                }
+            }
+
+            // Columns active state
+            for (let i = 1; i <= 4; i++) {
+                const btn = document.getElementById(`btnCol${i}`);
+                if (btn) {
+                    if (PROJECTS_LAYOUT_CONFIG.columns === i) {
+                        btn.classList.add('bg-blue-600', 'text-white', 'border-blue-600');
+                        btn.classList.remove('bg-white', 'dark:bg-zinc-900', 'text-black', 'dark:text-white');
+                    } else {
+                        btn.classList.remove('bg-blue-600', 'text-white', 'border-blue-600');
+                        btn.classList.add('bg-white', 'dark:bg-zinc-900');
+                    }
+                }
+            }
+        }
+
+        function updateProjectStyleSetting(style) {
+            saveProjectsLayoutConfig({ style: style });
+        }
+
+        function updateProjectColSetting(cols) {
+            saveProjectsLayoutConfig({ columns: cols });
+        }
+
+        // Modal Project Layout Controls
+        const projectLayoutModal = document.getElementById('projectLayoutModal');
+        const projectLayoutList = document.getElementById('projectLayoutList');
+
+        function openProjectLayoutModal() {
+            if (!isAdminActive) return;
+            renderProjectLayoutList();
+            updateProjectLayoutUIControls();
+            projectLayoutModal.classList.remove('hidden');
+            setTimeout(() => {
+                projectLayoutModal.classList.add('opacity-100');
+            }, 50);
+        }
+
+        function closeProjectLayoutModal() {
+            projectLayoutModal.classList.remove('opacity-100');
+            setTimeout(() => {
+                projectLayoutModal.classList.add('hidden');
+            }, 300);
+        }
+
+        function renderProjectLayoutList() {
+            projectLayoutList.innerHTML = '';
+            
+            // Sort local array copy for visual ordering list
+            const sortedProjects = [...MY_PROJECTS].sort((a, b) => {
+                const aOrder = a.order !== undefined ? a.order : 0;
+                const bOrder = b.order !== undefined ? b.order : 0;
+                if (aOrder !== bOrder) return aOrder - bOrder;
+                return (b.createdAt || 0) - (a.createdAt || 0);
+            });
+
+            sortedProjects.forEach((project, idx) => {
+                const item = document.createElement('div');
+                item.className = "flex items-center justify-between p-3 rounded-xl bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 text-xs gap-3";
+
+                const currentTitle = currentLang === 'id' ? project.title_id : project.title_en;
+                const isFeatured = project.isFeatured || false;
+                const featuredIcon = isFeatured ? '★ Populer' : '☆ Standar';
+                const featuredClass = isFeatured ? 'text-amber-500 font-bold' : 'text-zinc-400';
+
+                item.innerHTML = `
+                    <div class="flex items-center gap-2.5 truncate max-w-[200px]">
+                        <img src="${project.imageUrl}" class="w-8 h-8 rounded object-cover flex-shrink-0" onerror="this.src='https://placehold.co/100x100/1d1d1f/ffffff?text=Karya'">
+                        <span class="font-semibold truncate">${currentTitle}</span>
+                    </div>
+                    <div class="flex items-center gap-1.5 flex-shrink-0">
+                        <!-- Move Up -->
+                        <button onclick="moveProjectInList(${idx}, -1)" class="p-1.5 rounded hover:bg-black/10 dark:hover:bg-white/10 ${idx === 0 ? 'opacity-30 cursor-not-allowed' : ''}" ${idx === 0 ? 'disabled' : ''}>
+                            ▲
+                        </button>
+                        <!-- Move Down -->
+                        <button onclick="moveProjectInList(${idx}, 1)" class="p-1.5 rounded hover:bg-black/10 dark:hover:bg-white/10 ${idx === sortedProjects.length - 1 ? 'opacity-30 cursor-not-allowed' : ''}" ${idx === sortedProjects.length - 1 ? 'disabled' : ''}>
+                            ▼
+                        </button>
+                        <!-- Toggle Featured -->
+                        <button onclick="toggleProjectFeaturedInLayout('${project.id}')" class="px-2.5 py-1 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 text-[10px] ${featuredClass}">
+                            ${featuredIcon}
+                        </button>
+                    </div>
+                `;
+                projectLayoutList.appendChild(item);
+            });
+        }
+
+        function moveProjectInList(idx, direction) {
+            // Sort MY_PROJECTS locally first to match index
+            MY_PROJECTS.sort((a, b) => {
+                const aOrder = a.order !== undefined ? a.order : 0;
+                const bOrder = b.order !== undefined ? b.order : 0;
+                if (aOrder !== bOrder) return aOrder - bOrder;
+                return (b.createdAt || 0) - (a.createdAt || 0);
+            });
+
+            const targetIdx = idx + direction;
+            if (targetIdx < 0 || targetIdx >= MY_PROJECTS.length) return;
+
+            // Swap projects order value
+            const temp = MY_PROJECTS[idx];
+            MY_PROJECTS[idx] = MY_PROJECTS[targetIdx];
+            MY_PROJECTS[targetIdx] = temp;
+
+            // Re-assign sequential order values
+            MY_PROJECTS.forEach((p, index) => {
+                p.order = index;
+            });
+
+            saveProjectsOrder();
+            renderProjectLayoutList();
+        }
+
+        function saveProjectsOrder() {
+            if (isFirebaseActive) {
+                const batch = db.batch();
+                MY_PROJECTS.forEach((project) => {
+                    const docRef = db.collection("projects").doc(String(project.id));
+                    batch.update(docRef, { order: project.order });
+                });
+                
+                batch.commit().then(() => {
+                    showToast("Urutan proyek berhasil diperbarui!");
+                    renderProjects();
+                }).catch(err => {
+                    console.error("Gagal menyimpan urutan ke Firestore:", err);
+                    showToast("Gagal menyimpan urutan ke cloud.");
+                });
+            } else {
+                saveProjectsToStorage();
+                renderProjects();
+                showToast("Urutan proyek berhasil diperbarui!");
+            }
+        }
+
+        function toggleProjectFeaturedInLayout(id) {
+            const project = MY_PROJECTS.find(p => String(p.id) === String(id));
+            if (!project) return;
+
+            const newFeatured = !project.isFeatured;
+            project.isFeatured = newFeatured;
+
+            if (isFirebaseActive) {
+                db.collection("projects").doc(String(id)).update({ isFeatured: newFeatured })
+                    .then(() => {
+                        showToast(`Status populer diperbarui!`);
+                        renderProjectLayoutList();
+                        renderProjects();
+                    })
+                    .catch(err => {
+                        console.error("Gagal update status populer:", err);
+                        showToast("Gagal menyimpan status populer ke cloud.");
+                    });
+            } else {
+                saveProjectsToStorage();
+                renderProjectLayoutList();
+                renderProjects();
+                showToast(`Status populer diperbarui!`);
+            }
+        }
+
+        /************************************************************************
          * 💬 MOBILE HAMBURGER MENU ENGINE (Apple-Style Dropdown Overlay)
          ************************************************************************/
         const mobileMenuBtn = document.getElementById('mobileMenuBtn');
@@ -3030,6 +3403,7 @@
             loadCustomTranslations();
             initProjectsData();
             initLayoutConfig();
+            initProjectsLayoutConfig();
             checkAdminSession();
             applyTranslations();
             renderProjects();
