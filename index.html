@@ -1024,6 +1024,11 @@
         // API Key ImgBB untuk unggahan gambar super cepat (Dapatkan gratis di https://api.imgbb.com/)
         const imgbbApiKey = "";
 
+        // Konfigurasi Cloudinary (100% Gratis & Bebas Blokir Seluler)
+        // Silakan buat akun di https://cloudinary.com/ untuk mendapatkan Cloud Name dan Upload Preset Anda.
+        const cloudinaryCloudName = "YOUR_CLOUDINARY_CLOUD_NAME";
+        const cloudinaryUploadPreset = "YOUR_CLOUDINARY_UPLOAD_PRESET";
+
         // Inisialisasi Firebase jika config telah diisi
         let db = null;
         let auth = null;
@@ -2101,7 +2106,9 @@
                         ctx.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, targetWidth, targetHeight);
                         const webpBase64 = canvas.toDataURL('image/webp', 0.75);
 
-                        if (imgbbApiKey && imgbbApiKey !== "YOUR_IMGBB_API_KEY_HERE" && imgbbApiKey !== "") {
+                        if (cloudinaryCloudName && cloudinaryCloudName !== "YOUR_CLOUDINARY_CLOUD_NAME" && cloudinaryCloudName !== "" && cloudinaryUploadPreset && cloudinaryUploadPreset !== "YOUR_CLOUDINARY_UPLOAD_PRESET" && cloudinaryUploadPreset !== "") {
+                            uploadBlobToCloudinary(index, webpBase64);
+                        } else if (imgbbApiKey && imgbbApiKey !== "YOUR_IMGBB_API_KEY_HERE" && imgbbApiKey !== "") {
                             uploadBlobToImgBB(index, webpBase64);
                         } else if (isFirebaseActive) {
                             uploadBlobToFirebaseStorage(index, webpBase64, `projects/images_${Date.now()}.webp`);
@@ -2222,6 +2229,70 @@
             currentFormMedia[index].progress = 0;
             renderMediaRows();
             showToast("Gagal mengunggah gambar ke ImgBB. Periksa koneksi atau API Key Anda!");
+        }
+
+        function uploadBlobToCloudinary(index, base64Data) {
+            try {
+                const blob = dataURLtoBlob(base64Data);
+                const formData = new FormData();
+                formData.append('file', blob);
+                formData.append('upload_preset', cloudinaryUploadPreset);
+
+                const xhr = new XMLHttpRequest();
+                
+                xhr.upload.addEventListener('progress', (e) => {
+                    if (e.lengthComputable) {
+                        const progress = Math.round((e.loaded / e.total) * 100);
+                        currentFormMedia[index].progress = progress;
+                        
+                        const textEl = document.getElementById(`upload-progress-text-${index}`);
+                        const barEl = document.getElementById(`upload-progress-bar-${index}`);
+                        if (textEl && barEl) {
+                            textEl.textContent = `${progress}%`;
+                            barEl.style.width = `${progress}%`;
+                        } else {
+                            renderMediaRows();
+                        }
+                    }
+                });
+
+                xhr.addEventListener('load', () => {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            const downloadURL = response.secure_url;
+                            currentFormMedia[index].url = downloadURL;
+                            currentFormMedia[index].status = 'complete';
+                            currentFormMedia[index].progress = 100;
+                            renderMediaRows();
+                            showToast("Gambar berhasil diunggah ke Cloudinary CDN!");
+                        } catch (err) {
+                            console.error("Gagal parse response Cloudinary:", err);
+                            handleCloudinaryError(index);
+                        }
+                    } else {
+                        handleCloudinaryError(index);
+                    }
+                });
+
+                xhr.addEventListener('error', () => {
+                    handleCloudinaryError(index);
+                });
+
+                xhr.open('POST', `https://api.cloudinary.com/v1_1/${cloudinaryCloudName}/image/upload`);
+                xhr.send(formData);
+
+            } catch (e) {
+                console.error("Kesalahan upload Cloudinary:", e);
+                handleCloudinaryError(index);
+            }
+        }
+
+        function handleCloudinaryError(index) {
+            currentFormMedia[index].status = 'error';
+            currentFormMedia[index].progress = 0;
+            renderMediaRows();
+            showToast("Gagal mengunggah gambar ke Cloudinary. Periksa koneksi atau kredensial Anda!");
         }
 
         function uploadBlobToFirebaseStorage(index, base64Data, path) {
