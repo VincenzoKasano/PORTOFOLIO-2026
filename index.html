@@ -2929,6 +2929,38 @@
         let LAYOUT_CONFIG = [];
 
         function initLayoutConfig() {
+            // Load layout from local storage first for immediate rendering
+            loadLayoutFromLocalStorage();
+
+            if (isFirebaseActive) {
+                // Listen to section layout configuration changes in real-time from Firestore
+                db.collection("settings").doc("sections_layout").onSnapshot((doc) => {
+                    if (doc.exists && doc.data().layout) {
+                        LAYOUT_CONFIG = doc.data().layout;
+                        // Migrasi: tambahkan seksi baru jika tidak ada di konfigurasi tersimpan
+                        DEFAULT_LAYOUT.forEach((id, index) => {
+                            if (!LAYOUT_CONFIG.some(sec => sec.id === id)) {
+                                LAYOUT_CONFIG.push({
+                                    id: id,
+                                    order: LAYOUT_CONFIG.length,
+                                    visible: true,
+                                    name_id: getSectionName(id, 'id'),
+                                    name_en: getSectionName(id, 'en')
+                                });
+                            }
+                        });
+                        applyLayoutConfig();
+                        if (layoutManagerModal && !layoutManagerModal.classList.contains('hidden')) {
+                            renderLayoutManagerList();
+                        }
+                    }
+                }, (error) => {
+                    console.error("Gagal memuat setting layout seksi dari Firestore:", error);
+                });
+            }
+        }
+
+        function loadLayoutFromLocalStorage() {
             const savedLayout = localStorage.getItem('vinzpro_layout_config');
             if (savedLayout) {
                 try {
@@ -2950,7 +2982,6 @@
                 }
             } else {
                 LAYOUT_CONFIG = getDefaultLayoutConfig();
-                saveLayoutConfig();
             }
             applyLayoutConfig();
         }
@@ -2979,6 +3010,16 @@
 
         function saveLayoutConfig() {
             localStorage.setItem('vinzpro_layout_config', JSON.stringify(LAYOUT_CONFIG));
+            if (isFirebaseActive) {
+                db.collection("settings").doc("sections_layout").set({ layout: LAYOUT_CONFIG })
+                    .then(() => {
+                        console.log("Tata letak seksi disimpan ke Firestore.");
+                    })
+                    .catch((error) => {
+                        console.error("Gagal menyimpan tata letak seksi ke Firestore:", error);
+                        showToast("Gagal menyimpan ke cloud, disimpan secara lokal.");
+                    });
+            }
         }
 
         function applyLayoutConfig() {
@@ -3062,7 +3103,7 @@
             LAYOUT_CONFIG[targetIndex].order = temp;
 
             saveLayoutConfig();
-            initLayoutConfig();
+            applyLayoutConfig();
             renderLayoutManagerList();
             showToast("Tata letak layout diperbarui!");
         }
@@ -3070,7 +3111,7 @@
         function toggleSectionVisibility(index) {
             LAYOUT_CONFIG[index].visible = !LAYOUT_CONFIG[index].visible;
             saveLayoutConfig();
-            initLayoutConfig();
+            applyLayoutConfig();
             renderLayoutManagerList();
             showToast(`${LAYOUT_CONFIG[index].name_en} diperbarui visibility-nya!`);
         }
