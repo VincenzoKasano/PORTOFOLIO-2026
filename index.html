@@ -176,6 +176,11 @@
     <!-- 🌌 KOSMOS ANTI-GRAVITASI INTERAKTIF (HTML5 Canvas Background) -->
     <canvas id="cosmosCanvas" class="fixed inset-0 pointer-events-none z-0"></canvas>
 
+    <!-- Background Logo Watermark (Fixed to viewport) -->
+    <div class="fixed inset-0 flex items-center justify-center pointer-events-none z-0 select-none opacity-[0.08] dark:opacity-[0.12] transition-all duration-300">
+        <img src="./logo.png" alt="Watermark" class="w-full max-w-[280px] md:max-w-[400px] object-contain invert dark:invert-0">
+    </div>
+
     <!-- HEADER: GLASSMORPHISM PREMIUM -->
     <header
         class="fixed top-0 left-0 w-full z-50 border-b border-black/[0.04] dark:border-white/[0.04] bg-[#f5f5f7]/60 dark:bg-[#000000]/60 backdrop-blur-2xl">
@@ -287,10 +292,6 @@
         <!-- SEKSI 1: HERO SECTION -->
         <section id="hero"
             class="min-h-screen pt-32 pb-20 flex flex-col justify-center items-center px-6 text-center relative overflow-hidden">
-            <!-- Background Logo Watermark -->
-            <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-0 select-none opacity-[0.03] dark:opacity-[0.05] transition-all duration-300">
-                <img src="./logo.png" alt="Watermark" class="w-full max-w-[280px] md:max-w-[400px] object-contain invert dark:invert-0">
-            </div>
             <div
                 class="absolute w-[350px] h-[350px] rounded-full bg-blue-500/5 dark:bg-blue-500/10 blur-[130px] top-1/4 -left-32 animate-float-slow">
             </div>
