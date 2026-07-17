@@ -4084,8 +4084,23 @@
             return dateStr;
         }
 
+        function getBase64Image(imgEl) {
+            try {
+                const canvas = document.createElement("canvas");
+                canvas.width = imgEl.naturalWidth || imgEl.width || 200;
+                canvas.height = imgEl.naturalHeight || imgEl.height || 80;
+                const ctx = canvas.getContext("2d");
+                ctx.drawImage(imgEl, 0, 0);
+                return canvas.toDataURL("image/png");
+            } catch (e) {
+                console.error("Gagal convert logo ke base64:", e);
+                return imgEl.src;
+            }
+        }
+
         function downloadInvoicePDF() {
             const printArea = document.getElementById('invoicePrintArea');
+            const originalLogo = document.getElementById('previewLogo');
             const docNo = document.getElementById('finDocNo').value || 'invoice';
             const filename = docNo.replace(/\//g, '_') + '.pdf';
             
@@ -4095,14 +4110,28 @@
             // Hapus bayangan dan sudut melengkung agar bersih di kertas PDF
             clone.classList.remove('shadow-2xl', 'rounded-lg');
             
-            // Berikan posisi absolut di luar layar agar dirender sempurna oleh engine html2pdf
-            clone.style.position = 'absolute';
-            clone.style.left = '-9999px';
-            clone.style.top = '0px';
-            clone.style.width = '210mm'; // Paksa ukuran lebar A4 standard
-            clone.style.height = 'auto';
-            clone.style.background = 'white';
+            // Atur ukuran standar A4 secara inline
+            clone.style.width = '210mm'; 
+            clone.style.minHeight = '297mm';
+            clone.style.boxSizing = 'border-box';
+            clone.style.padding = '40px';
+            clone.style.background = '#ffffff';
             clone.style.color = '#1e293b'; // Slate 800
+            
+            // Buat wrapper container untuk meletakkannya di root body dengan posisi tetap namun tidak mengganggu tampilan pengguna
+            const wrapper = document.createElement('div');
+            wrapper.style.position = 'fixed';
+            wrapper.style.top = '0';
+            wrapper.style.left = '0';
+            wrapper.style.width = '210mm';
+            wrapper.style.height = 'auto';
+            wrapper.style.zIndex = '-99999'; // Letakkan di paling belakang agar tersembunyi di balik modal
+            wrapper.style.opacity = '1';
+            wrapper.style.pointerEvents = 'none';
+            wrapper.style.background = '#ffffff';
+            
+            wrapper.appendChild(clone);
+            document.body.appendChild(wrapper);
             
             // Pastikan semua teks di dalam clone berwarna gelap (mencegah gangguan dark mode)
             clone.querySelectorAll('*').forEach(el => {
@@ -4116,35 +4145,50 @@
             clone.querySelectorAll('.text-slate-400, .text-slate-500').forEach(el => {
                 el.style.color = '#64748b'; 
             });
-            
-            document.body.appendChild(clone);
+
+            // Convert logo ke base64 agar aman dari kendala cross-origin canvas loading
+            const cloneLogo = clone.querySelector('#previewLogo');
+            if (originalLogo && cloneLogo) {
+                cloneLogo.src = getBase64Image(originalLogo);
+                cloneLogo.style.display = 'block';
+                const invertCheck = document.getElementById('finLogoInvert').checked;
+                if (invertCheck) {
+                    cloneLogo.style.filter = 'invert(1)';
+                } else {
+                    cloneLogo.style.filter = 'none';
+                }
+            }
             
             const opt = {
-                margin:       [10, 10, 10, 10], 
+                margin:       0, // Margin diatur nol karena padding cetak sudah ada di inline style klon
                 filename:     filename,
                 image:        { type: 'jpeg', quality: 0.98 },
                 html2canvas:  { 
                     scale: 2, 
                     useCORS: true, 
-                    logging: false,
+                    logging: true,
                     letterRendering: true,
-                    backgroundColor: '#ffffff'
+                    backgroundColor: '#ffffff',
+                    scrollX: 0,
+                    scrollY: 0
                 },
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
             
             showToast("Sedang memproses PDF...");
             
-            html2pdf().set(opt).from(clone).save().then(() => {
-                document.body.removeChild(clone);
-                showToast("PDF berhasil diunduh!");
-            }).catch(err => {
-                console.error("Gagal mengunduh PDF:", err);
-                if (clone.parentNode) {
-                    document.body.removeChild(clone);
-                }
-                showToast("Gagal memproses file PDF!");
-            });
+            setTimeout(() => {
+                html2pdf().set(opt).from(clone).save().then(() => {
+                    document.body.removeChild(wrapper);
+                    showToast("PDF berhasil diunduh!");
+                }).catch(err => {
+                    console.error("Gagal mengunduh PDF:", err);
+                    if (wrapper.parentNode) {
+                        document.body.removeChild(wrapper);
+                    }
+                    showToast("Gagal memproses file PDF!");
+                });
+            }, 300);
         }
 
         /************************************************************************
