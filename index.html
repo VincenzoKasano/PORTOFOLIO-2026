@@ -971,102 +971,109 @@
 
                     <!-- PDF Sheet Container (A4 Proportions) -->
                     <div id="invoicePrintArea" class="w-full max-w-[210mm] min-h-[297mm] bg-white text-slate-800 p-10 md:p-12 shadow-2xl rounded-lg font-sans relative flex flex-col justify-between" style="box-sizing: border-box;">
-                        <div>
-                            <!-- Header Info -->
-                            <div class="flex justify-between items-start border-b-2 border-slate-100 pb-6">
-                                <div>
-                                    <!-- Company logo & name -->
-                                    <div class="flex items-center gap-3">
-                                        <img id="previewLogo" src="./logo.png" alt="VINZ PRODUCTION" class="h-10 object-contain invert" onerror="this.style.display='none'">
-                                        <span class="text-lg font-bold uppercase tracking-tight text-slate-900" id="previewIssuerName">PT. VINZ PRODUCTION CREATIVE</span>
-                                    </div>
-                                    <div class="text-[11px] text-slate-500 mt-2 space-y-0.5">
-                                        <p id="previewIssuerAddress">Semarang & Jakarta, Indonesia</p>
-                                        <p>Email: <span id="previewIssuerEmail">vinzproductioncreative@gmail.com</span> | Phone: <span id="previewIssuerPhone">+62 851-7508-5590</span></p>
-                                    </div>
-                                </div>
-
-                                <div class="text-right">
-                                    <h2 id="previewDocTitle" class="text-2xl font-black tracking-tight text-slate-900 uppercase">QUOTATION</h2>
-                                    <p class="text-xs font-mono text-slate-400 mt-1" id="previewDocNo">QT/VP/2026/001</p>
-                                    <div class="text-[11px] text-slate-500 mt-3 space-y-1">
-                                        <p>Tanggal Terbit: <strong class="text-slate-800" id="previewDocDate">17-07-2026</strong></p>
-                                        <p>Due Date: <strong class="text-slate-800" id="previewDocDueDate">24-07-2026</strong></p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Client Info Section -->
-                            <div class="grid grid-cols-2 gap-4 py-8 text-xs">
-                                <div>
-                                    <span class="text-[10px] font-bold text-slate-400 uppercase block mb-1">Ditujukan Kepada:</span>
-                                    <h4 class="font-bold text-sm text-slate-900" id="previewClientName">PT. Sukses Mulia</h4>
-                                    <p class="text-slate-500 mt-1 whitespace-pre-line" id="previewClientAddress">Jl. Sudirman No. 12, Jakarta</p>
-                                    <p class="text-slate-500 mt-1" id="previewClientContact">Email: finance@sukses.com</p>
-                                </div>
-                            </div>
-
-                            <!-- Items Table -->
-                            <table class="w-full text-left text-xs border-collapse">
-                                <thead>
-                                    <tr class="border-b border-slate-200 text-slate-400 uppercase text-[10px] font-bold">
-                                        <th class="py-3 w-8">#</th>
-                                        <th class="py-3">Deskripsi Pekerjaan / Layanan</th>
-                                        <th class="py-3 text-right w-16">Qty</th>
-                                        <th class="py-3 text-right w-28">Harga Satuan</th>
-                                        <th class="py-3 text-right w-32">Total</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="previewItemsTableBody">
-                                    <!-- Dynamic rows loaded here -->
-                                </tbody>
-                            </table>
-
-                            <!-- Calculation Totals -->
-                            <div class="flex justify-end mt-6 text-xs">
-                                <div class="w-72 space-y-2 border-t border-slate-100 pt-4">
-                                    <div class="flex justify-between">
-                                        <span class="text-slate-500">Subtotal</span>
-                                        <span class="font-semibold text-slate-900" id="previewSubtotal">Rp 0</span>
-                                    </div>
-                                    <div class="flex justify-between text-rose-600 hidden" id="previewDiscountRow">
-                                        <span>Diskon</span>
-                                        <span id="previewDiscount">-Rp 0</span>
-                                    </div>
-                                    <div class="flex justify-between text-slate-500">
-                                        <span>PPN (<span id="previewTaxRate">11</span>%)</span>
-                                        <span class="font-semibold text-slate-900" id="previewTax">Rp 0</span>
-                                    </div>
-                                    <div class="flex justify-between border-t border-slate-200 pt-2 text-sm">
-                                        <span class="font-bold text-slate-800">Total Tagihan</span>
-                                        <span class="font-black text-slate-900 text-base" id="previewTotal">Rp 0</span>
-                                    </div>
-                                </div>
-                            </div>
+                        <!-- Watermark Background Logo -->
+                        <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-0 select-none opacity-[0.05]" id="invoiceWatermarkContainer" style="opacity: 0.05; display: flex; align-items: center; justify-content: center;">
+                            <img id="invoiceWatermarkLogo" src="./logo.png" alt="Watermark" class="w-2/3 max-w-[280px] object-contain invert" onerror="this.style.display='none'">
                         </div>
 
-                        <!-- Footer Payment & T&C & Signatures -->
-                        <div class="border-t border-slate-100 pt-6 mt-8">
-                            <div class="grid grid-cols-2 gap-6 text-[10px] text-slate-500">
-                                <div>
-                                    <span class="font-bold text-slate-800 uppercase block mb-1">Informasi Pembayaran:</span>
-                                    <p id="previewBankDetails">Bank BCA - 1234567890 a/n Marvin Aldian</p>
-                                    
-                                    <span class="font-bold text-slate-800 uppercase block mt-3 mb-1">Ketentuan & Syarat:</span>
-                                    <p class="whitespace-pre-line leading-relaxed" id="previewTerms">1. Pembayaran dilakukan via transfer bank tertera.
-2. DP 50% sebelum mulai produksi, pelunasan 50% setelah revisi selesai.
-3. Maksimal revisi minor sebanyak 3 kali.</p>
+                        <div class="relative z-10 w-full flex flex-col justify-between h-full flex-grow">
+                            <div>
+                                <!-- Header Info -->
+                                <div class="flex justify-between items-start border-b-2 border-slate-100 pb-6">
+                                    <div>
+                                        <!-- Company logo & name -->
+                                        <div class="flex items-center gap-3">
+                                            <img id="previewLogo" src="./logo.png" alt="VINZ PRODUCTION" class="h-10 object-contain invert" onerror="this.style.display='none'">
+                                            <span class="text-lg font-bold uppercase tracking-tight text-slate-900" id="previewIssuerName">PT. VINZ PRODUCTION CREATIVE</span>
+                                        </div>
+                                        <div class="text-[11px] text-slate-500 mt-2 space-y-0.5">
+                                            <p id="previewIssuerAddress">Semarang & Jakarta, Indonesia</p>
+                                            <p>Email: <span id="previewIssuerEmail">vinzproductioncreative@gmail.com</span> | Phone: <span id="previewIssuerPhone">+62 851-7508-5590</span></p>
+                                        </div>
+                                    </div>
+
+                                    <div class="text-right">
+                                        <h2 id="previewDocTitle" class="text-2xl font-black tracking-tight text-slate-900 uppercase">QUOTATION</h2>
+                                        <p class="text-xs font-mono text-slate-400 mt-1" id="previewDocNo">QT/VP/2026/001</p>
+                                        <div class="text-[11px] text-slate-500 mt-3 space-y-1">
+                                            <p>Tanggal Terbit: <strong class="text-slate-800" id="previewDocDate">17-07-2026</strong></p>
+                                            <p>Due Date: <strong class="text-slate-800" id="previewDocDueDate">24-07-2026</strong></p>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="flex flex-col items-end justify-between">
-                                    <div class="text-center">
-                                        <p class="mb-14">Hormat Kami,</p>
-                                        <h4 class="font-bold text-slate-900 text-xs" id="previewSignatoryName">Marvin Aldian</h4>
-                                        <p id="previewSignatoryRole">Founder & Creative Director</p>
+
+                                <!-- Client Info Section -->
+                                <div class="grid grid-cols-2 gap-4 py-8 text-xs">
+                                    <div>
+                                        <span class="text-[10px] font-bold text-slate-400 uppercase block mb-1">Ditujukan Kepada:</span>
+                                        <h4 class="font-bold text-sm text-slate-900" id="previewClientName">PT. Sukses Mulia</h4>
+                                        <p class="text-slate-500 mt-1 whitespace-pre-line" id="previewClientAddress">Jl. Sudirman No. 12, Jakarta</p>
+                                        <p class="text-slate-500 mt-1" id="previewClientContact">Email: finance@sukses.com</p>
+                                    </div>
+                                </div>
+
+                                <!-- Items Table -->
+                                <table class="w-full text-left text-xs border-collapse">
+                                    <thead>
+                                        <tr class="border-b border-slate-200 text-slate-400 uppercase text-[10px] font-bold">
+                                            <th class="py-3 w-8">#</th>
+                                            <th class="py-3">Deskripsi Pekerjaan / Layanan</th>
+                                            <th class="py-3 text-right w-16">Qty</th>
+                                            <th class="py-3 text-right w-28">Harga Satuan</th>
+                                            <th class="py-3 text-right w-32">Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="previewItemsTableBody">
+                                        <!-- Dynamic rows loaded here -->
+                                    </tbody>
+                                </table>
+
+                                <!-- Calculation Totals -->
+                                <div class="flex justify-end mt-6 text-xs">
+                                    <div class="w-72 space-y-2 border-t border-slate-100 pt-4">
+                                        <div class="flex justify-between">
+                                            <span class="text-slate-500">Subtotal</span>
+                                            <span class="font-semibold text-slate-900" id="previewSubtotal">Rp 0</span>
+                                        </div>
+                                        <div class="flex justify-between text-rose-600 hidden" id="previewDiscountRow">
+                                            <span>Diskon</span>
+                                            <span id="previewDiscount">-Rp 0</span>
+                                        </div>
+                                        <div class="flex justify-between text-slate-500">
+                                            <span>PPN (<span id="previewTaxRate">11</span>%)</span>
+                                            <span class="font-semibold text-slate-900" id="previewTax">Rp 0</span>
+                                        </div>
+                                        <div class="flex justify-between border-t border-slate-200 pt-2 text-sm">
+                                            <span class="font-bold text-slate-800">Total Tagihan</span>
+                                            <span class="font-black text-slate-900 text-base" id="previewTotal">Rp 0</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="text-center text-[9px] text-slate-400 mt-8 border-t border-slate-100 pt-4">
-                                Thank you for working with PT. VINZ PRODUCTION CREATIVE
+
+                            <!-- Footer Payment & T&C & Signatures -->
+                            <div class="border-t border-slate-100 pt-6 mt-8">
+                                <div class="grid grid-cols-2 gap-6 text-[10px] text-slate-500">
+                                    <div>
+                                        <span class="font-bold text-slate-800 uppercase block mb-1">Informasi Pembayaran:</span>
+                                        <p id="previewBankDetails">Bank BCA - 1234567890 a/n Marvin Aldian</p>
+                                        
+                                        <span class="font-bold text-slate-800 uppercase block mt-3 mb-1">Ketentuan & Syarat:</span>
+                                        <p class="whitespace-pre-line leading-relaxed" id="previewTerms">1. Pembayaran dilakukan via transfer bank tertera.
+2. DP 50% sebelum mulai produksi, pelunasan 50% setelah revisi selesai.
+3. Maksimal revisi minor sebanyak 3 kali.</p>
+                                    </div>
+                                    <div class="flex flex-col items-end justify-between">
+                                        <div class="text-center">
+                                            <p class="mb-14">Hormat Kami,</p>
+                                            <h4 class="font-bold text-slate-900 text-xs" id="previewSignatoryName">Marvin Aldian</h4>
+                                            <p id="previewSignatoryRole">Founder & Creative Director</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="text-center text-[9px] text-slate-400 mt-8 border-t border-slate-100 pt-4">
+                                    Thank you for working with PT. VINZ PRODUCTION CREATIVE
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -4020,13 +4027,23 @@
             document.getElementById('previewSignatoryName').textContent = document.getElementById('finSignatoryName').value;
             document.getElementById('previewSignatoryRole').textContent = document.getElementById('finSignatoryRole').value;
 
-            // Invert logo check
+            // Invert logo & watermark check
             const invertCheck = document.getElementById('finLogoInvert').checked;
             const previewLogo = document.getElementById('previewLogo');
+            const watermarkLogo = document.getElementById('invoiceWatermarkLogo');
+            
+            // Set base64 src secara langsung agar aman dari pemuatan rusak
+            previewLogo.src = getBase64Image();
+            if (watermarkLogo) {
+                watermarkLogo.src = getBase64Image();
+            }
+
             if (invertCheck) {
                 previewLogo.classList.add('invert');
+                if (watermarkLogo) watermarkLogo.classList.add('invert');
             } else {
                 previewLogo.classList.remove('invert');
+                if (watermarkLogo) watermarkLogo.classList.remove('invert');
             }
 
             // Calculations
@@ -4086,7 +4103,7 @@
 
         function getBase64Image(imgEl) {
             // Hardcoded PT. VINZ PRODUCTION CREATIVE base64 logo URI
-            return "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJwAAABICAYAAAAe1wQAAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAACXBIWXMAAAsTAAALEwEAmpwYAAAFJ0lEQVR4Ae3bvWscRxQA8PMgH1I4VcgVKhXyIVeojy0U+thCoY+tQh9bqFSpVK5UqVSqVKhUqFS+dKhQ/tCBA1/IkD/hE/nCBwqFCgWO5GPLB4pU0M+dZ+yZ2Zld3d3dO92+L4/lM/f2vJk/dr+9vdm52TkeCBAggEAPBMbdsCNLCCwTuHzc7h0ftO1w/Gf7+r2v6DbfG/v4YQ+p2bWfH+w/vj748fGf7T2/N8aYVbO/bN2j1H3UfdS91P0xR6m91F5qb96Tus/aV+35vR1eW3tZ04d9pLgU69Z9eR3V7j/v46Xg1r3yF32f3tL7XkP3o+4n6wQ0R0Bz7qf9cRy2LqfK+3n8WNdT+W/s5v0zG/r63G/K+/Y7yH0n45r5Dnb2M6n9nO4l/y0P21T59h33q7HjYfFjP9X3rP2Zf1hP5b9lU8R92t/r72NtxxW3K+c98aB72Yft6n56uP4+L0fWjof94nHYf6HssWj8/sL+uO/YHzG2bVf2t3VfaD3W2P8w17w/3O5N/U/99HDO++H++J99/1e26w869kP2rR22q/q+/tq+F4KvvG/s6+u2r/3hfq1tXf1n/2HfR99p38f1yD6u7nXYx8Vl/7jY7P9yH6VjX3lfrh4Wf1zseLjfdl/U2/5hffux136o++j76Pvd/dF32ndT99P1s37kY/7R49L+3B62rO14WPaX+577yvvGfq7+5mX2nfdJ/fRj/vG+FqL2c+L/mH9dff3nZeX9s/v6yG2qP25X+Xm1/fL9PPLrO/aXx1P3/f+p/37HPlO39X1/uD3934/1p37U3/l9R/PevvLz8t+y2e7+eZzN90hO20Uf7p1bT/eH+/xQeH5/L2O+12c1/z3dD8f9j/vxwXF/5Xn74/21b/t7e6/34Wv+0dfUf3t/e31fH5Z/eJp/P9Uj+l56/vE/8fG+97zNqWf+0X8fW7/n4n9rG/rL/c0Lz1H7sT/tO03V3N/c3+7nPrK331uW5Vf21Z/3Lp+Z3b44xvxw/PzK/j4t7tvygW22+aW9P48f3D/2Z21D4vP/L5/jH3UfG9df7Tq/79gH1Q/75Hk++N4aV186rvj/Gv+I6x6P5p3z3tL/5Wv+qdfUbeLzK5sXnpvGfG1ZfU/26fM4Wvy2/p61v9rvep3/yvX50T2iWdEdfQ/dj77f30P6b2h/7yX/N9/6sPewn6y76Dnpf+9P+0L+W1c962b9f+5p/WPcT/5qfqe/p/fA+WpP74j143/6I66X281O2K8dTrKfY2h9x3ePRf9+n5X6vD8t1KftNfT9fT5fvyv3N19T9tB921/zjfjQ2PEx+rG1UvG/GnvjQ/6XvUfvz91v7e33Wtr/Wfub17zV0P+p+WvOD3U/tpfZWf6+99N/60L+V1X7Wbf/x/uO+0X6os3msv8w7P887HzkIPnKQuE7+W9V/3M/mx/+w/8v/sPUX2g91Nq7/2p+PHz1K7aPuo+6V+6t7q/sP/o0xZtXsL1v1KH2P8h2K32P8o15/2X20v8+Hl9r7wzHGrJrt/DGrZm+M0Teb2Ww2m81ms9lsNpvNZpvnL9Fp499GfUqGAAAAAElFTkSuQmCC"
+            return "data:image/png;base64,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";
         }
 
         function downloadInvoicePDF() {
@@ -4137,16 +4154,35 @@
                 el.style.color = '#64748b'; 
             });
 
-            // Set logo base64 secara langsung untuk menjamin rendering PDF tanpa kendala
+            // Set logo base64 secara langsung dan hapus onerror agar tidak menyembunyikan diri
             const cloneLogo = clone.querySelector('#previewLogo');
             if (cloneLogo) {
+                cloneLogo.removeAttribute('onerror');
                 cloneLogo.src = getBase64Image();
                 cloneLogo.style.display = 'block';
+                cloneLogo.style.visibility = 'visible';
+                cloneLogo.style.opacity = '1';
                 const invertCheck = document.getElementById('finLogoInvert').checked;
                 if (invertCheck) {
                     cloneLogo.style.filter = 'invert(1)';
                 } else {
                     cloneLogo.style.filter = 'none';
+                }
+            }
+
+            // Set watermark logo base64 secara langsung dan hapus onerror
+            const cloneWatermark = clone.querySelector('#invoiceWatermarkLogo');
+            if (cloneWatermark) {
+                cloneWatermark.removeAttribute('onerror');
+                cloneWatermark.src = getBase64Image();
+                cloneWatermark.style.display = 'block';
+                cloneWatermark.style.visibility = 'visible';
+                cloneWatermark.style.opacity = '1';
+                const invertCheck = document.getElementById('finLogoInvert').checked;
+                if (invertCheck) {
+                    cloneWatermark.style.filter = 'invert(1)';
+                } else {
+                    cloneWatermark.style.filter = 'none';
                 }
             }
             
