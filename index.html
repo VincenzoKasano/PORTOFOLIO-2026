@@ -4085,17 +4085,8 @@
         }
 
         function getBase64Image(imgEl) {
-            try {
-                const canvas = document.createElement("canvas");
-                canvas.width = imgEl.naturalWidth || imgEl.width || 200;
-                canvas.height = imgEl.naturalHeight || imgEl.height || 80;
-                const ctx = canvas.getContext("2d");
-                ctx.drawImage(imgEl, 0, 0);
-                return canvas.toDataURL("image/png");
-            } catch (e) {
-                console.error("Gagal convert logo ke base64:", e);
-                return imgEl.src;
-            }
+            // Hardcoded PT. VINZ PRODUCTION CREATIVE base64 logo URI
+            return "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJwAAABICAYAAAAe1wQAAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAACXBIWXMAAAsTAAALEwEAmpwYAAAFJ0lEQVR4Ae3bvWscRxQA8PMgH1I4VcgVKhXyIVeojy0U+thCoY+tQh9bqFSpVK5UqVSqVKhUqFS+dKhQ/tCBA1/IkD/hE/nCBwqFCgWO5GPLB4pU0M+dZ+yZ2Zld3d3dO92+L4/lM/f2vJk/dr+9vdm52TkeCBAggEAPBMbdsCNLCCwTuHzc7h0ftO1w/Gf7+r2v6DbfG/v4YQ+p2bWfH+w/vj748fGf7T2/N8aYVbO/bN2j1H3UfdS91P0xR6m91F5qb96Tus/aV+35vR1eW3tZ04d9pLgU69Z9eR3V7j/v46Xg1r3yF32f3tL7XkP3o+4n6wQ0R0Bz7qf9cRy2LqfK+3n8WNdT+W/s5v0zG/r63G/K+/Y7yH0n45r5Dnb2M6n9nO4l/y0P21T59h33q7HjYfFjP9X3rP2Zf1hP5b9lU8R92t/r72NtxxW3K+c98aB72Yft6n56uP4+L0fWjof94nHYf6HssWj8/sL+uO/YHzG2bVf2t3VfaD3W2P8w17w/3O5N/U/99HDO++H++J99/1e26w869kP2rR22q/q+/tq+F4KvvG/s6+u2r/3hfq1tXf1n/2HfR99p38f1yD6u7nXYx8Vl/7jY7P9yH6VjX3lfrh4Wf1zseLjfdl/U2/5hffux136o++j76Pvd/dF32ndT99P1s37kY/7R49L+3B62rO14WPaX+577yvvGfq7+5mX2nfdJ/fRj/vG+FqL2c+L/mH9dff3nZeX9s/v6yG2qP25X+Xm1/fL9PPLrO/aXx1P3/f+p/37HPlO39X1/uD3934/1p37U3/l9R/PevvLz8t+y2e7+eZzN90hO20Uf7p1bT/eH+/xQeH5/L2O+12c1/z3dD8f9j/vxwXF/5Xn74/21b/t7e6/34Wv+0dfUf3t/e31fH5Z/eJp/P9Uj+l56/vE/8fG+97zNqWf+0X8fW7/n4n9rG/rL/c0Lz1H7sT/tO03V3N/c3+7nPrK331uW5Vf21Z/3Lp+Z3b44xvxw/PzK/j4t7tvygW22+aW9P48f3D/2Z21D4vP/L5/jH3UfG9df7Tq/79gH1Q/75Hk++N4aV186rvj/Gv+I6x6P5p3z3tL/5Wv+qdfUbeLzK5sXnpvGfG1ZfU/26fM4Wvy2/p61v9rvep3/yvX50T2iWdEdfQ/dj77f30P6b2h/7yX/N9/6sPewn6y76Dnpf+9P+0L+W1c962b9f+5p/WPcT/5qfqe/p/fA+WpP74j143/6I66X281O2K8dTrKfY2h9x3ePRf9+n5X6vD8t1KftNfT9fT5fvyv3N19T9tB921/zjfjQ2PEx+rG1UvG/GnvjQ/6XvUfvz91v7e33Wtr/Wfub17zV0P+p+WvOD3U/tpfZWf6+99N/60L+V1X7Wbf/x/uO+0X6os3msv8w7P887HzkIPnKQuE7+W9V/3M/mx/+w/8v/sPUX2g91Nq7/2p+PHz1K7aPuo+6V+6t7q/sP/o0xZtXsL1v1KH2P8h2K32P8o15/2X20v8+Hl9r7wzHGrJrt/DGrZm+M0Teb2Ww2m81ms9lsNpvNZpvnL9Fp499GfUqGAAAAAElFTkSuQmCC"
         }
 
         function downloadInvoicePDF() {
@@ -4146,10 +4137,10 @@
                 el.style.color = '#64748b'; 
             });
 
-            // Convert logo ke base64 agar aman dari kendala cross-origin canvas loading
+            // Set logo base64 secara langsung untuk menjamin rendering PDF tanpa kendala
             const cloneLogo = clone.querySelector('#previewLogo');
-            if (originalLogo && cloneLogo) {
-                cloneLogo.src = getBase64Image(originalLogo);
+            if (cloneLogo) {
+                cloneLogo.src = getBase64Image();
                 cloneLogo.style.display = 'block';
                 const invertCheck = document.getElementById('finLogoInvert').checked;
                 if (invertCheck) {
