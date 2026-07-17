@@ -902,7 +902,7 @@
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold opacity-75 mb-1">Email Resmi</label>
-                                <input type="email" id="finIssuerEmail" value="marvinaldian30@gmail.com" oninput="updateFinancePreview()" class="w-full p-2.5 bg-white dark:bg-zinc-900 border border-black/10 dark:border-zinc-800 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                                <input type="email" id="finIssuerEmail" value="vinzproductioncreative@gmail.com" oninput="updateFinancePreview()" class="w-full p-2.5 bg-white dark:bg-zinc-900 border border-black/10 dark:border-zinc-800 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none">
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold opacity-75 mb-1">Alamat Resmi</label>
@@ -982,7 +982,7 @@
                                     </div>
                                     <div class="text-[11px] text-slate-500 mt-2 space-y-0.5">
                                         <p id="previewIssuerAddress">Semarang & Jakarta, Indonesia</p>
-                                        <p>Email: <span id="previewIssuerEmail">marvinaldian30@gmail.com</span> | Phone: <span id="previewIssuerPhone">+62 851-7508-5590</span></p>
+                                        <p>Email: <span id="previewIssuerEmail">vinzproductioncreative@gmail.com</span> | Phone: <span id="previewIssuerPhone">+62 851-7508-5590</span></p>
                                     </div>
                                 </div>
 
@@ -3808,17 +3808,81 @@
         /************************************************************************
          * 📊 QUOTATION & INVOICE BUILDER SYSTEM
          ************************************************************************/
+        const FINANCE_STORAGE_KEY = 'vinzpro_finance_data';
         let financeDocType = 'quotation'; // default: quotation
         let financeItems = [
             { description: 'Produksi Video Musik (Penyutradaraan & Editing)', qty: 1, price: 15000000 },
             { description: 'Foto Studio Eksklusif (KAI Board Directory)', qty: 1, price: 5000000 }
         ];
 
+        function saveFinanceDataToStorage() {
+            // Pastikan elemen DOM ada sebelum membaca value-nya
+            const docNoEl = document.getElementById('finDocNo');
+            if (!docNoEl) return;
+
+            const data = {
+                docType: financeDocType,
+                docNo: docNoEl.value,
+                docDate: document.getElementById('finDocDate').value,
+                docDueDate: document.getElementById('finDocDueDate').value,
+                clientName: document.getElementById('finClientName').value,
+                clientContact: document.getElementById('finClientContact').value,
+                clientAddress: document.getElementById('finClientAddress').value,
+                issuerName: document.getElementById('finIssuerName').value,
+                issuerPhone: document.getElementById('finIssuerPhone').value,
+                issuerEmail: document.getElementById('finIssuerEmail').value,
+                issuerAddress: document.getElementById('finIssuerAddress').value,
+                items: financeItems,
+                discount: document.getElementById('finDiscount').value,
+                taxRate: document.getElementById('finTaxRate').value,
+                bankDetails: document.getElementById('finBankDetails').value,
+                terms: document.getElementById('finTerms').value,
+                signatoryName: document.getElementById('finSignatoryName').value,
+                signatoryRole: document.getElementById('finSignatoryRole').value,
+                logoInvert: document.getElementById('finLogoInvert').checked
+            };
+            localStorage.setItem(FINANCE_STORAGE_KEY, JSON.stringify(data));
+        }
+
+        function loadFinanceDataFromStorage() {
+            const saved = localStorage.getItem(FINANCE_STORAGE_KEY);
+            if (saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    financeDocType = data.docType || 'quotation';
+                    financeItems = data.items || [];
+                    
+                    document.getElementById('finDocNo').value = data.docNo || '';
+                    document.getElementById('finDocDate').value = data.docDate || '';
+                    document.getElementById('finDocDueDate').value = data.docDueDate || '';
+                    document.getElementById('finClientName').value = data.clientName || '';
+                    document.getElementById('finClientContact').value = data.clientContact || '';
+                    document.getElementById('finClientAddress').value = data.clientAddress || '';
+                    document.getElementById('finIssuerName').value = data.issuerName || 'PT. VINZ PRODUCTION CREATIVE';
+                    document.getElementById('finIssuerPhone').value = data.issuerPhone || '+62 851-7508-5590';
+                    document.getElementById('finIssuerEmail').value = data.issuerEmail || 'vinzproductioncreative@gmail.com';
+                    document.getElementById('finIssuerAddress').value = data.issuerAddress || 'Semarang & Jakarta, Indonesia';
+                    document.getElementById('finDiscount').value = data.discount || '0';
+                    document.getElementById('finTaxRate').value = data.taxRate || '11';
+                    document.getElementById('finBankDetails').value = data.bankDetails || '';
+                    document.getElementById('finTerms').value = data.terms || '';
+                    document.getElementById('finSignatoryName').value = data.signatoryName || '';
+                    document.getElementById('finSignatoryRole').value = data.signatoryRole || '';
+                    document.getElementById('finLogoInvert').checked = data.logoInvert !== undefined ? data.logoInvert : true;
+                } catch (e) {
+                    console.error("Gagal memuat data finansial dari LocalStorage:", e);
+                }
+            } else {
+                // Default pre-filled
+                document.getElementById('finIssuerEmail').value = 'vinzproductioncreative@gmail.com';
+            }
+        }
+
         function openFinanceModal() {
             if (!isAdminActive) return;
             const financeModal = document.getElementById('financeModal');
             
-            // Set default dates
+            // Set default dates & values first
             const today = new Date().toISOString().substring(0, 10);
             const nextWeek = new Date();
             nextWeek.setDate(nextWeek.getDate() + 7);
@@ -3830,18 +3894,13 @@
             // Set auto-generated document numbers if empty
             const randomId = Math.floor(100 + Math.random() * 900);
             const year = new Date().getFullYear();
-            if (!document.getElementById('finDocNo').value) {
-                document.getElementById('finDocNo').value = `QT/VP/${year}/${randomId}`;
-            }
-            if (!document.getElementById('finClientName').value) {
-                document.getElementById('finClientName').value = "PT. Sukses Mulia";
-            }
-            if (!document.getElementById('finClientContact').value) {
-                document.getElementById('finClientContact').value = "finance@sukses.com";
-            }
-            if (!document.getElementById('finClientAddress').value) {
-                document.getElementById('finClientAddress').value = "Jl. Jenderal Sudirman No. 12, Jakarta";
-            }
+            document.getElementById('finDocNo').value = `QT/VP/${year}/${randomId}`;
+            document.getElementById('finClientName').value = "PT. Sukses Mulia";
+            document.getElementById('finClientContact').value = "finance@sukses.com";
+            document.getElementById('finClientAddress').value = "Jl. Jenderal Sudirman No. 12, Jakarta";
+            
+            // Load saved data if exists (overwrites the defaults above)
+            loadFinanceDataFromStorage();
             
             setFinanceDocType(financeDocType);
             renderFinanceEditorRows();
@@ -4011,6 +4070,9 @@
             document.getElementById('previewTaxRate').textContent = taxRate;
             document.getElementById('previewTax').textContent = formatIDR(taxAmount);
             document.getElementById('previewTotal').textContent = formatIDR(grandTotal);
+
+            // Auto-save changes to storage
+            saveFinanceDataToStorage();
         }
 
         function formatDateStr(dateStr) {
@@ -4027,20 +4089,60 @@
             const docNo = document.getElementById('finDocNo').value || 'invoice';
             const filename = docNo.replace(/\//g, '_') + '.pdf';
             
-            // Mengubah style sementara agar pas di file PDF
+            // Buat clone dari print area
+            const clone = printArea.cloneNode(true);
+            
+            // Hapus bayangan dan sudut melengkung agar bersih di kertas PDF
+            clone.classList.remove('shadow-2xl', 'rounded-lg');
+            
+            // Berikan posisi absolut di luar layar agar dirender sempurna oleh engine html2pdf
+            clone.style.position = 'absolute';
+            clone.style.left = '-9999px';
+            clone.style.top = '0px';
+            clone.style.width = '210mm'; // Paksa ukuran lebar A4 standard
+            clone.style.height = 'auto';
+            clone.style.background = 'white';
+            clone.style.color = '#1e293b'; // Slate 800
+            
+            // Pastikan semua teks di dalam clone berwarna gelap (mencegah gangguan dark mode)
+            clone.querySelectorAll('*').forEach(el => {
+                el.style.color = '#1e293b'; 
+                el.style.borderColor = '#e2e8f0'; 
+            });
+            // Berikan warna slate-900 ke judul, head table, total, dan teks tebal
+            clone.querySelectorAll('h2, h3, h4, th, .font-bold, .font-black').forEach(el => {
+                el.style.color = '#0f172a'; 
+            });
+            clone.querySelectorAll('.text-slate-400, .text-slate-500').forEach(el => {
+                el.style.color = '#64748b'; 
+            });
+            
+            document.body.appendChild(clone);
+            
             const opt = {
-                margin:       10,
+                margin:       [10, 10, 10, 10], 
                 filename:     filename,
                 image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true, letterRendering: true },
+                html2canvas:  { 
+                    scale: 2, 
+                    useCORS: true, 
+                    logging: false,
+                    letterRendering: true,
+                    backgroundColor: '#ffffff'
+                },
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
             
-            // Jalankan html2pdf
-            html2pdf().set(opt).from(printArea).save().then(() => {
+            showToast("Sedang memproses PDF...");
+            
+            html2pdf().set(opt).from(clone).save().then(() => {
+                document.body.removeChild(clone);
                 showToast("PDF berhasil diunduh!");
             }).catch(err => {
                 console.error("Gagal mengunduh PDF:", err);
+                if (clone.parentNode) {
+                    document.body.removeChild(clone);
+                }
                 showToast("Gagal memproses file PDF!");
             });
         }
